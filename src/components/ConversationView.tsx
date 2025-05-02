@@ -1,19 +1,22 @@
 
 import React, { useEffect, useRef, useState } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
-import { Message } from '@/types';
+import { Message, exampleAgents, exampleMessages } from '@/types';
 import { formatTimestamp, generateId, getAgentColorByPlatform, getAgentInitial } from '@/utils/helpers';
 import { callAgent } from '@/utils/mockAgentHandlers';
 import { toast } from 'sonner';
 
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Crown, Loader2 } from 'lucide-react';
+import { AlertCircle, ArrowDownToLine, Crown, ExternalLink, Loader2 } from 'lucide-react';
 import { EnhancedTooltip } from './ui/enhanced-tooltip';
+import { Button } from './ui/button';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
 
 const ConversationView: React.FC = () => {
-  const { currentProject, addMessage, updateMessage, isRunning, setIsRunning } = useProject();
+  const { currentProject, addMessage, updateMessage, isRunning, setIsRunning, updateProject } = useProject();
   const [thinking, setThinking] = useState<string | null>(null);
+  const [showingExample, setShowingExample] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
@@ -198,11 +201,20 @@ const ConversationView: React.FC = () => {
       setThinking(null);
     }
   };
-  
-  // Helper function to update the project
-  const updateProject = (updates: any) => {
-    const { updateProject } = useProject();
-    updateProject(updates);
+
+  const loadExampleMessages = () => {
+    setShowingExample(true);
+  };
+
+  const loadExampleProject = () => {
+    // Update the current project with example data
+    updateProject({
+      prompt: "Make me a 1-page site that introduces a song I created and includes a play button for the audio.",
+      agents: JSON.parse(JSON.stringify(exampleAgents)), // Deep copy to avoid reference issues
+      messages: JSON.parse(JSON.stringify(exampleMessages)), // Deep copy to avoid reference issues
+    });
+    toast.success("Loaded example project");
+    setShowingExample(false);
   };
 
   if (currentProject.messages.length === 0 && !thinking) {
@@ -214,9 +226,84 @@ const ConversationView: React.FC = () => {
           </svg>
         </div>
         <h3 className="font-medium text-lg">No Conversation Yet</h3>
-        <p className="text-mesh-textSecondary mt-2 max-w-sm">
+        <p className="text-mesh-textSecondary mt-2 max-w-sm mb-6">
           Enter a prompt and run the conversation to see your AI agents work together.
         </p>
+        
+        <Dialog>
+          <DialogTrigger asChild>
+            <Button 
+              variant="outline" 
+              className="flex items-center gap-2 bg-background/30 hover:bg-background/50 backdrop-blur"
+              onClick={loadExampleMessages}
+            >
+              <ExternalLink size={16} />
+              <span>View Example Conversation</span>
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Example Multi-Agent Conversation</DialogTitle>
+              <DialogDescription>
+                See how multiple AI agents can collaborate on a task
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="space-y-4 my-4">
+              {exampleMessages.map((message) => {
+                const agent = message.agentId === 'user' 
+                  ? { name: 'User', role: 'Prompt' } 
+                  : exampleAgents.find(a => a.id === message.agentId);
+                
+                if (!agent) return null;
+                
+                const avatarColor = message.agentId === 'user' 
+                  ? 'bg-gradient-to-r from-blue-500 to-blue-700' 
+                  : getAgentColorByPlatform(exampleAgents.find(a => a.id === message.agentId)?.platform || 'Other');
+                
+                const isLeader = message.agentId !== 'user' && exampleAgents.find(a => a.id === message.agentId)?.isLeader;
+                
+                return (
+                  <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
+                    <div className="flex items-start space-x-3">
+                      <div className="flex flex-col items-center">
+                        <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
+                          {message.agentId === 'user' ? 'U' : getAgentInitial(agent.name)}
+                        </div>
+                        {isLeader && (
+                          <EnhancedTooltip content="This agent is leading the conversation">
+                            <Crown size={14} className="text-amber-400 mt-1" />
+                          </EnhancedTooltip>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <div className="flex items-center space-x-2">
+                          <span className="font-medium">{agent.name}</span>
+                          <span className="text-xs text-mesh-textSecondary">{formatTimestamp(message.timestamp)}</span>
+                          <EnhancedTooltip content={`This agent's role is: ${agent.role}`}>
+                            <span className="text-xs bg-mesh-purple/10 text-mesh-purple px-2 py-0.5 rounded-full">
+                              {agent.role}
+                            </span>
+                          </EnhancedTooltip>
+                        </div>
+                        <div className="mt-1 text-sm whitespace-pre-wrap bg-black/20 p-3 rounded-lg border border-white/5">
+                          {message.content}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            
+            <div className="flex justify-end mt-4">
+              <Button onClick={loadExampleProject} className="bg-mesh-purple hover:bg-mesh-purple/80">
+                <ArrowDownToLine size={16} className="mr-2" />
+                Load Example Into Project
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     );
   }
@@ -239,7 +326,7 @@ const ConversationView: React.FC = () => {
                   </div>
                   {agent.isLeader && (
                     <EnhancedTooltip content="This agent is leading the conversation">
-                      <Crown size={14} className="leader-crown mt-1" />
+                      <Crown size={14} className="text-amber-400 mt-1" />
                     </EnhancedTooltip>
                   )}
                 </div>
@@ -284,7 +371,7 @@ const ConversationView: React.FC = () => {
                         </div>
                         {agent.isLeader && (
                           <EnhancedTooltip content="This agent is leading the conversation">
-                            <Crown size={14} className="leader-crown mt-1" />
+                            <Crown size={14} className="text-amber-400 mt-1" />
                           </EnhancedTooltip>
                         )}
                       </div>
