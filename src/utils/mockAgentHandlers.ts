@@ -34,11 +34,11 @@ export const callAgent = async (
 export const mockPlatformExamplePrompts: Record<string, string> = {
   'OpenAI': 'You are a helpful assistant. Think step-by-step and provide clear, accurate information.',
   'Anthropic': 'You are Claude, an AI assistant created by Anthropic. Be helpful, harmless, and honest.',
-  'Google': 'You are Gemini, Google's helpful AI. Provide informative and balanced responses.',
+  'Google': 'You are Gemini, Google\'s helpful AI. Provide informative and balanced responses.',
   'Lovable': 'You are Lovable, an AI built to design interfaces and write code. Focus on producing beautiful UI/UX.',
   'Meta': 'You are Meta AI, designed to be helpful, harmless, and honest in all your interactions.',
   'Canva': 'You are Canva AI. Create and suggest beautiful designs with a focus on aesthetics and brand consistency.',
-  'Local': 'You are running locally on the user's machine. Be efficient with resources while providing helpful responses.',
+  'Local': 'You are running locally on the user\'s machine. Be efficient with resources while providing helpful responses.',
   'Other': 'You are an AI assistant. Help the user accomplish their goals by providing useful responses.'
 };
 

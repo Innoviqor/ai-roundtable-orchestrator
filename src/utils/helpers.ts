@@ -111,7 +111,7 @@ export async function simulateAgentResponse(
       response += ' My analysis shows this is the optimal approach.';
       break;
     case 'Anthropic':
-      response += ' I've carefully considered the ethical implications of this.';
+      response += ' I have carefully considered the ethical implications of this.';
       break;
     case 'Google':
       response += ' Based on a comprehensive information search, this seems most appropriate.';
@@ -120,7 +120,7 @@ export async function simulateAgentResponse(
       response += ' This solution would engage users effectively.';
       break;
     case 'Canva':
-      response += ' I've created a visual mockup to illustrate this concept.';
+      response += ' I have created a visual mockup to illustrate this concept.';
       break;
     default:
       break;
@@ -135,10 +135,10 @@ export async function simulateAgentResponse(
   return response;
 }
 
-export function saveProjectToLocalStorage(project: Project): void {
+export function saveProjectToLocalStorage(project: any): void {
   try {
     const projects = getProjectsFromLocalStorage();
-    const updatedProjects = projects.filter(p => p.id !== project.id);
+    const updatedProjects = projects.filter((p: any) => p.id !== project.id);
     updatedProjects.push(project);
     localStorage.setItem('ai-mesh-projects', JSON.stringify(updatedProjects));
   } catch (error) {
@@ -146,7 +146,7 @@ export function saveProjectToLocalStorage(project: Project): void {
   }
 }
 
-export function getProjectsFromLocalStorage(): Project[] {
+export function getProjectsFromLocalStorage(): any[] {
   try {
     const projectsJson = localStorage.getItem('ai-mesh-projects');
     return projectsJson ? JSON.parse(projectsJson) : [];
@@ -156,10 +156,10 @@ export function getProjectsFromLocalStorage(): Project[] {
   }
 }
 
-export function getProjectFromLocalStorage(id: string): Project | undefined {
+export function getProjectFromLocalStorage(id: string): any | undefined {
   try {
     const projects = getProjectsFromLocalStorage();
-    return projects.find(project => project.id === id);
+    return projects.find((project: any) => project.id === id);
   } catch (error) {
     console.error('Failed to retrieve project from localStorage:', error);
     return undefined;
