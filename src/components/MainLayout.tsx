@@ -23,7 +23,9 @@ import {
   Sun, 
   MenuIcon,
   PanelLeftIcon,
-  PanelRightIcon
+  PanelRightIcon,
+  ChevronLeft,
+  ChevronRight
 } from 'lucide-react';
 import {
   SidebarProvider,
@@ -42,6 +44,7 @@ const MainLayout: React.FC = () => {
   const { agents } = currentProject;
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
   const [rightPanelOpen, setRightPanelOpen] = useState(true);
+  const { open, toggleSidebar } = useSidebar();
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -85,6 +88,16 @@ const MainLayout: React.FC = () => {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Left Sidebar Toggle (Visible on all screens) */}
+              <Button 
+                variant="outline" 
+                size="icon" 
+                className="rounded-full h-8 w-8 transition-all hover:shadow-glow flex"
+                onClick={toggleSidebar}
+              >
+                {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+              </Button>
+              
               {/* Right Panel Toggle (Medium+ screens) */}
               <Button 
                 variant="outline" 
@@ -232,6 +245,14 @@ const MainLayout: React.FC = () => {
                           AI agents working together on your prompt
                         </CardDescription>
                       </div>
+                      <Button 
+                        variant="outline" 
+                        size="icon" 
+                        className="rounded-full h-8 w-8 md:hidden"
+                        onClick={toggleSidebar}
+                      >
+                        {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </Button>
                     </div>
                   </CardHeader>
                   <ScrollArea className="h-[calc(100vh-12rem)] md:h-[calc(100vh-14rem)]">
