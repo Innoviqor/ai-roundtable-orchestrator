@@ -39,6 +39,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     messages: [],
     created: Date.now(),
     updated: Date.now(),
+    conversationRounds: 0,
+    maxConversationRounds: 10, // Default to 10 rounds max to prevent infinite loops
   });
   const [isRunning, setIsRunning] = useState(false);
 
@@ -63,6 +65,8 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
       messages: [],
       created: Date.now(),
       updated: Date.now(),
+      conversationRounds: 0,
+      maxConversationRounds: 10,
     };
 
     setCurrentProject(newProject);
@@ -122,7 +126,10 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
   };
 
   const clearMessages = () => {
-    updateProject({ messages: [] });
+    updateProject({ 
+      messages: [],
+      conversationRounds: 0 // Reset conversation rounds when clearing messages
+    });
     toast.info('Cleared conversation history');
   };
 

@@ -21,6 +21,20 @@ const ConversationView: React.FC = () => {
     endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [currentProject.messages, thinking]);
 
+  // Trigger response to the last message if it's from an agent
+  useEffect(() => {
+    // Only run this if we're in conversation mode and not already thinking
+    if (isRunning && !thinking && currentProject.messages.length > 0) {
+      const lastMessage = currentProject.messages[currentProject.messages.length - 1];
+      const lastAgent = currentProject.agents.find(a => a.id === lastMessage.agentId);
+      
+      // Don't respond if this is a user message or if we've reached the conversation limit
+      if (lastAgent && currentProject.conversationRounds < currentProject.maxConversationRounds) {
+        triggerNextAgentResponse(lastMessage);
+      }
+    }
+  }, [currentProject.messages, isRunning, thinking]);
+
   // Handle run conversation event
   useEffect(() => {
     const handleRunConversation = async (event: CustomEvent) => {
@@ -108,8 +122,6 @@ const ConversationView: React.FC = () => {
           setThinking(null);
         }
       }
-      
-      setIsRunning(false);
     };
 
     const handleStopConversation = () => {
@@ -126,6 +138,72 @@ const ConversationView: React.FC = () => {
       window.removeEventListener('stopConversation', handleStopConversation);
     };
   }, [currentProject, addMessage, setIsRunning, isRunning]);
+
+  // Function to trigger the next agent response in the conversation
+  const triggerNextAgentResponse = async (lastMessage: Message) => {
+    const { agents } = currentProject;
+    if (agents.length <= 1) return; // Need at least 2 agents to have a conversation
+    
+    // Find the agent that sent the last message
+    const lastAgentIndex = agents.findIndex(agent => agent.id === lastMessage.agentId);
+    
+    // Determine the next agent (circular)
+    const nextAgentIndex = (lastAgentIndex + 1) % agents.length;
+    const nextAgent = agents[nextAgentIndex];
+    
+    // Skip if this is the leader agent and we already had the leader directive
+    if (nextAgent.isLeader && currentProject.messages.some(m => m.agentId === nextAgent.id)) {
+      // Try the next agent instead
+      const afterNextAgentIndex = (nextAgentIndex + 1) % agents.length;
+      if (afterNextAgentIndex !== lastAgentIndex) {
+        const afterNextAgent = agents[afterNextAgentIndex];
+        await generateAgentResponse(afterNextAgent, lastMessage);
+      }
+      return;
+    }
+    
+    await generateAgentResponse(nextAgent, lastMessage);
+  };
+  
+  // Generate a response from a specific agent
+  const generateAgentResponse = async (agent: any, lastMessage: Message) => {
+    if (!isRunning) return;
+    
+    setThinking(agent.id);
+    
+    try {
+      // Increment the conversation round counter
+      updateProject({
+        conversationRounds: (currentProject.conversationRounds || 0) + 1
+      });
+      
+      // Prompt for the agent to respond to the previous message
+      const responsePrompt = `Respond to this message from ${
+        currentProject.agents.find(a => a.id === lastMessage.agentId)?.name || 'another agent'
+      }: "${lastMessage.content}"`;
+      
+      // Call the agent with the appropriate context
+      const message = await callAgent(
+        agent,
+        responsePrompt,
+        currentProject.messages
+      );
+      
+      addMessage(message);
+    } catch (error) {
+      console.error(`Error getting response from ${agent.name}:`, error);
+      toast.error(`Failed to get response from ${agent.name}`);
+      setIsRunning(false);
+    } finally {
+      setThinking(null);
+    }
+  };
+  
+  // Helper function to update the project
+  const updateProject = (updates: any) => {
+    const { updateProject } = useProject();
+    updateProject(updates);
+  };
 
   if (currentProject.messages.length === 0 && !thinking) {
     return (

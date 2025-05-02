@@ -42,4 +42,6 @@ export interface Project {
   messages: Message[];
   created: number;
   updated: number;
+  conversationRounds?: number;
+  maxConversationRounds?: number;
 }
