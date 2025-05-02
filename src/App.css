@@ -1,42 +1,86 @@
+
 #root {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  text-align: center;
+  width: 100%;
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  text-align: left;
 }
 
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: filter 300ms;
-}
-.logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
-}
-.logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+/* Remove default margins and paddings for the app */
+body, html {
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
 }
 
-@keyframes logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
+/* Add responsive styles */
+@media (max-width: 768px) {
+  .mesh-card {
+    border-radius: 8px;
   }
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  a:nth-of-type(2) .logo {
-    animation: logo-spin infinite 20s linear;
-  }
+/* Gradient text for headings */
+.gradient-text {
+  background: linear-gradient(90deg, rgba(127,90,240,1) 0%, rgba(0,178,255,1) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  display: inline-block;
 }
 
-.card {
-  padding: 2em;
+/* Animation for thinking dots */
+@keyframes thinking {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
 }
 
-.read-the-docs {
-  color: #888;
+.animate-thinking {
+  animation: thinking 1.5s infinite ease-in-out;
+}
+
+/* Shadow effects */
+.shadow-glow {
+  box-shadow: 0 0 15px -3px rgba(127, 90, 240, 0.4);
+}
+
+/* Transitions */
+.transition-all {
+  transition: all 0.2s ease-in-out;
+}
+
+/* Hide scrollbars but allow scrolling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.1) transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.3s ease-in-out forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Mesh-specific card styling */
+.mesh-card {
+  background: linear-gradient(145deg, rgba(30, 30, 47, 0.8), rgba(30, 30, 47, 0.4));
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
