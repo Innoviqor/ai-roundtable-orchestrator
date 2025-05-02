@@ -7,6 +7,7 @@ export type AIPlatform =
   | 'Local' 
   | 'Meta' 
   | 'Canva'
+  | 'Suno'
   | 'Other';
 
 export type AgentType = 'chat' | 'task';
@@ -71,7 +72,7 @@ export const exampleAgents: AIAgent[] = [
     name: 'Composer',
     role: 'Content Creator',
     systemPrompt: 'You generate creative content like music, images, or text based on project requirements.',
-    platform: 'Meta',
+    platform: 'Suno',
     type: 'chat',
     isLeader: false
   },

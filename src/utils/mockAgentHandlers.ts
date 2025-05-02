@@ -99,34 +99,44 @@ export const mockPlatformExamplePrompts: Record<string, string> = {
   'Meta': 'You are Meta AI, designed to be helpful, harmless, and honest in all your interactions.',
   'Canva': 'You are Canva AI. Create and suggest beautiful designs with a focus on aesthetics and brand consistency.',
   'Local': 'You are running locally on the user\'s machine. Be efficient with resources while providing helpful responses.',
+  'Suno': 'You are Suno, an AI that specializes in creating and generating music based on text descriptions.',
   'Other': 'You are an AI assistant. Help the user accomplish their goals by providing useful responses.'
 };
 
 export const getDefaultAgents = (): AIAgent[] => [
   {
     id: generateId(),
-    name: 'Dev GPT',
-    role: 'Developer',
-    systemPrompt: mockPlatformExamplePrompts['OpenAI'] + ' Focus on writing clean, efficient code and providing technical solutions.',
+    name: 'Architect',
+    role: 'System Designer',
+    systemPrompt: 'You are an architectural planner for projects, focusing on structure, design patterns, and overall vision.',
     platform: 'OpenAI',
     type: 'chat',
-    isLeader: false
+    isLeader: true
   },
   {
     id: generateId(),
-    name: 'Design Claude',
-    role: 'Designer',
-    systemPrompt: mockPlatformExamplePrompts['Anthropic'] + ' Focus on user experience, visual design, and aesthetics.',
-    platform: 'Anthropic',
+    name: 'Researcher',
+    role: 'Information Specialist',
+    systemPrompt: 'You analyze requirements and provide relevant information, options, and best practices.',
+    platform: 'Google',
     type: 'chat',
     isLeader: false
   },
   {
     id: generateId(),
-    name: 'Critical Thinker',
-    role: 'Critic',
-    systemPrompt: mockPlatformExamplePrompts['Google'] + ' Your job is to find flaws, edge cases, and potential improvements in the proposed solutions.',
-    platform: 'Google',
+    name: 'Composer',
+    role: 'Content Creator',
+    systemPrompt: 'You generate creative content like music, images, or text based on project requirements.',
+    platform: 'Suno',
+    type: 'chat',
+    isLeader: false
+  },
+  {
+    id: generateId(),
+    name: 'Builder',
+    role: 'Developer',
+    systemPrompt: 'You implement the technical solutions with clean, efficient code and practical approaches.',
+    platform: 'Lovable',
     type: 'chat',
     isLeader: false
   }
