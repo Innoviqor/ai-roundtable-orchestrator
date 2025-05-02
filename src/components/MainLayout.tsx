@@ -56,15 +56,15 @@ const MainLayout: React.FC = () => {
   }, []);
 
   return (
-    <SidebarProvider defaultOpen={true}>
+    <SidebarProvider defaultOpen={false}>
       <div className="min-h-screen flex flex-col w-full">
         {/* Background mesh gradients */}
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_top_right,rgba(127,90,240,0.15),transparent_50%)] pointer-events-none" />
         <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_bottom_left,rgba(0,178,255,0.08),transparent_50%)] pointer-events-none" />
         
-        {/* Mobile/Tablet Header */}
+        {/* Header - Made more prominent and always visible */}
         <header className="border-b border-white/10 backdrop-blur-sm bg-black/50 sticky top-0 z-10 h-16">
-          <div className="container max-w-6xl flex items-center justify-between h-full">
+          <div className="container max-w-6xl mx-auto flex items-center justify-between h-full px-4">
             <div className="flex items-center gap-2">
               <div className="md:hidden">
                 <SidebarTrigger />
@@ -249,7 +249,7 @@ const MainLayout: React.FC = () => {
                 </div>
               )}
               
-              {/* Mobile-only bottom sheet for output */}
+              {/* Mobile-only bottom drawer for output */}
               <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
                 <Drawer>
                   <DrawerTrigger asChild>
