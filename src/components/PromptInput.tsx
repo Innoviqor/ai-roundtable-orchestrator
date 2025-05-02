@@ -6,6 +6,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ConversationMode } from '@/types';
 import { Play, StopCircle, Trash2 } from 'lucide-react';
+import { EnhancedTooltip } from './ui/enhanced-tooltip';
 
 const PromptInput: React.FC = () => {
   const { currentProject, updateProject, isRunning, setIsRunning, clearMessages } = useProject();
@@ -51,54 +52,73 @@ const PromptInput: React.FC = () => {
           placeholder="Enter your prompt here..."
           value={currentProject.prompt}
           onChange={handlePromptChange}
-          className="min-h-[120px] resize-none"
+          className="min-h-[120px] resize-none bg-background/50 backdrop-blur-sm border-white/20 focus-visible:ring-mesh-primary/30"
           disabled={isRunning}
         />
       </div>
 
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center space-x-2">
-          <Select
-            value={currentProject.conversationMode}
-            onValueChange={handleModeChange}
-            disabled={isRunning}
-          >
-            <SelectTrigger className="w-[180px]">
-              <SelectValue placeholder="Conversation Mode" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="sequential">Sequential</SelectItem>
-              <SelectItem value="simultaneous">Simultaneous</SelectItem>
-            </SelectContent>
-          </Select>
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={clearMessages}
-            disabled={isRunning || currentProject.messages.length === 0}
-          >
-            <Trash2 className="h-4 w-4" />
-          </Button>
+          <EnhancedTooltip content="Choose how AI agents respond to your prompt. Sequential: one after another. Simultaneous: all at once.">
+            <div>
+              <Select
+                value={currentProject.conversationMode}
+                onValueChange={handleModeChange}
+                disabled={isRunning}
+              >
+                <SelectTrigger className="w-[180px] bg-background/50 backdrop-blur-sm border-white/20">
+                  <SelectValue placeholder="Conversation Mode" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="sequential">Sequential</SelectItem>
+                  <SelectItem value="simultaneous">Simultaneous</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </EnhancedTooltip>
+          
+          <EnhancedTooltip content="Clear all messages in the current conversation">
+            <div>
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={clearMessages}
+                disabled={isRunning || currentProject.messages.length === 0}
+                className="bg-background/50 backdrop-blur-sm border-white/20"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
+            </div>
+          </EnhancedTooltip>
         </div>
 
         <div className="flex space-x-2">
           {isRunning ? (
-            <Button 
-              onClick={handleStopConversation}
-              variant="destructive"
-            >
-              <StopCircle className="mr-2 h-4 w-4" />
-              Stop Conversation
-            </Button>
+            <EnhancedTooltip content="Stop the current AI conversation">
+              <div>
+                <Button 
+                  onClick={handleStopConversation}
+                  variant="destructive"
+                  className="shadow-lg shadow-destructive/20"
+                >
+                  <StopCircle className="mr-2 h-4 w-4" />
+                  Stop Conversation
+                </Button>
+              </div>
+            </EnhancedTooltip>
           ) : (
-            <Button 
-              onClick={handleRunConversation}
-              disabled={!currentProject.prompt.trim() || currentProject.agents.length === 0 || isSubmitting}
-              className="bg-mesh-primary hover:bg-mesh-tertiary"
-            >
-              <Play className="mr-2 h-4 w-4" />
-              Run Conversation
-            </Button>
+            <EnhancedTooltip content="Start the AI conversation with your prompt">
+              <div>
+                <Button 
+                  onClick={handleRunConversation}
+                  disabled={!currentProject.prompt.trim() || currentProject.agents.length === 0 || isSubmitting}
+                  variant="gradient"
+                >
+                  <Play className="mr-2 h-4 w-4" />
+                  Run Conversation
+                </Button>
+              </div>
+            </EnhancedTooltip>
           )}
         </div>
       </div>

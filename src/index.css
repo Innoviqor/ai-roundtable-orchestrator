@@ -89,20 +89,92 @@
   body {
     @apply bg-background text-foreground;
   }
+  
+  /* Animation for text gradient */
+  .animated-gradient-text {
+    @apply bg-gradient-to-r bg-clip-text text-transparent animate-gradient;
+    background-size: 200% auto;
+  }
 }
 
-.scrollbar-thin {
-  scrollbar-width: thin;
+@layer components {
+  .mesh-card {
+    @apply border border-white/10 bg-background/50 backdrop-blur-sm shadow-lg;
+    background-image: radial-gradient(at 50% 0%, rgba(155, 135, 245, 0.1) 0%, transparent 70%);
+  }
+  
+  .mesh-border {
+    @apply border border-white/10 shadow-sm;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .mesh-border::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, rgba(155, 135, 245, 0.5), transparent);
+  }
 }
 
-.scrollbar-thin::-webkit-scrollbar {
-  width: 6px;
+@layer utilities {
+  .scrollbar-thin {
+    scrollbar-width: thin;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    @apply bg-muted rounded-full;
+  }
+  
+  .animate-gradient {
+    background-size: 200% auto;
+    animation: gradient 8s linear infinite;
+  }
+  
+  .animate-fade-in {
+    animation: fadeIn 0.5s ease-in-out;
+  }
 }
 
-.scrollbar-thin::-webkit-scrollbar-track {
-  @apply bg-transparent;
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
 }
 
-.scrollbar-thin::-webkit-scrollbar-thumb {
-  @apply bg-muted rounded-full;
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulseGlow {
+  0%, 100% {
+    box-shadow: 0 0 5px rgba(155, 135, 245, 0.5);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(155, 135, 245, 0.8);
+  }
 }

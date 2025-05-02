@@ -22,6 +22,7 @@ export interface AIAgent {
   apiKey?: string;
   type: AgentType;
   avatar?: string;
+  isLeader?: boolean;
 }
 
 export interface Message {

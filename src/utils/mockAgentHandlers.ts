@@ -1,3 +1,4 @@
+
 import { AIAgent, Message, AIPlatform } from "@/types";
 import { generateId, simulateAgentResponse } from "./helpers";
 import { callExternalAI } from "@/services/aiService";
@@ -31,6 +32,11 @@ export const callAgent = async (
       }
     }
     
+    // Add leadership style prefix if agent is a leader
+    if (agent.isLeader) {
+      content = `[TEAM COORDINATOR] ${content}\n\n${generateLeadershipDirectives()}`;
+    }
+    
     return {
       id: generateId(),
       agentId: agent.id,
@@ -50,6 +56,41 @@ export const callAgent = async (
   }
 };
 
+// Generate leadership directives to guide the team
+function generateLeadershipDirectives(): string {
+  const directives = [
+    "Team, here's how we should proceed:",
+    "Let's coordinate our efforts as follows:",
+    "I suggest we take these next steps:",
+    "To achieve our goal, I recommend we:"
+  ];
+  
+  const tasks = [
+    "- Designer: Focus on the visual elements and user experience",
+    "- Developer: Implement the core functionality",
+    "- Critic: Review the proposed solution for potential issues",
+    "- Let's break this down into manageable components",
+    "- First, let's understand the requirements fully",
+    "- We should prioritize the most important features first",
+    "- Let's make sure we address all edge cases"
+  ];
+  
+  // Select a random directive and 2-3 random tasks
+  const directive = directives[Math.floor(Math.random() * directives.length)];
+  const selectedTasks = [];
+  const taskCount = Math.floor(Math.random() * 2) + 2; // 2-3 tasks
+  
+  for (let i = 0; i < taskCount; i++) {
+    const randomIndex = Math.floor(Math.random() * tasks.length);
+    selectedTasks.push(tasks[randomIndex]);
+    tasks.splice(randomIndex, 1); // Remove selected task to avoid duplication
+    
+    if (tasks.length === 0) break; // Break if we run out of tasks
+  }
+  
+  return `${directive}\n${selectedTasks.join('\n')}`;
+}
+
 export const mockPlatformExamplePrompts: Record<string, string> = {
   'OpenAI': 'You are a helpful assistant. Think step-by-step and provide clear, accurate information.',
   'Anthropic': 'You are Claude, an AI assistant created by Anthropic. Be helpful, harmless, and honest.',
@@ -68,7 +109,8 @@ export const getDefaultAgents = (): AIAgent[] => [
     role: 'Developer',
     systemPrompt: mockPlatformExamplePrompts['OpenAI'] + ' Focus on writing clean, efficient code and providing technical solutions.',
     platform: 'OpenAI',
-    type: 'chat'
+    type: 'chat',
+    isLeader: false
   },
   {
     id: generateId(),
@@ -76,7 +118,8 @@ export const getDefaultAgents = (): AIAgent[] => [
     role: 'Designer',
     systemPrompt: mockPlatformExamplePrompts['Anthropic'] + ' Focus on user experience, visual design, and aesthetics.',
     platform: 'Anthropic',
-    type: 'chat'
+    type: 'chat',
+    isLeader: false
   },
   {
     id: generateId(),
@@ -84,6 +127,7 @@ export const getDefaultAgents = (): AIAgent[] => [
     role: 'Critic',
     systemPrompt: mockPlatformExamplePrompts['Google'] + ' Your job is to find flaws, edge cases, and potential improvements in the proposed solutions.',
     platform: 'Google',
-    type: 'chat'
+    type: 'chat',
+    isLeader: false
   }
 ];
