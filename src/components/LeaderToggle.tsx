@@ -22,7 +22,7 @@ const LeaderToggle: React.FC<LeaderToggleProps> = ({ agent }) => {
       <EnhancedTooltip 
         content={
           agent.isLeader 
-            ? "This agent will lead the conversation and coordinate the other AIs" 
+            ? "This agent is the leader and will orchestrate the other AIs based on your prompt" 
             : "Make this agent the conversation leader"
         }
       >
@@ -34,7 +34,7 @@ const LeaderToggle: React.FC<LeaderToggleProps> = ({ agent }) => {
           />
           <Crown 
             size={16} 
-            className={`transition-colors ${agent.isLeader ? 'text-yellow-500' : 'text-muted-foreground'}`} 
+            className={`transition-colors ${agent.isLeader ? 'leader-crown' : 'text-muted-foreground'}`} 
           />
         </div>
       </EnhancedTooltip>

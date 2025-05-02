@@ -13,44 +13,64 @@ import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
-import { Github, Info, Settings, Sparkles } from 'lucide-react';
+import { Github, Info, Moon, Settings, Sparkles, Sun } from 'lucide-react';
 
 const MainLayout: React.FC = () => {
   const { currentProject } = useProject();
   const { agents } = currentProject;
+  const [theme, setTheme] = React.useState<'dark' | 'light'>('dark');
+
+  const toggleTheme = () => {
+    const newTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(newTheme);
+    document.documentElement.classList.toggle('light', newTheme === 'light');
+    document.documentElement.classList.toggle('dark', newTheme === 'dark');
+  };
+
+  // Set initial theme class
+  React.useEffect(() => {
+    document.documentElement.classList.add(theme);
+  }, []);
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-br from-background to-background/95">
-      {/* Background mesh gradient */}
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_top_right,rgba(155,135,245,0.1),transparent_50%)] pointer-events-none" />
-      <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_bottom_left,rgba(155,135,245,0.05),transparent_50%)] pointer-events-none" />
+    <div className="min-h-screen flex flex-col">
+      {/* Background mesh gradients */}
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_top_right,rgba(127,90,240,0.15),transparent_50%)] pointer-events-none" />
+      <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_bottom_left,rgba(0,178,255,0.08),transparent_50%)] pointer-events-none" />
       
       {/* Header */}
-      <header className="border-b border-white/10 backdrop-blur-sm bg-background/80 sticky top-0 z-10">
-        <div className="container flex items-center justify-between h-16">
+      <header className="border-b border-white/10 backdrop-blur-sm bg-black/50 sticky top-0 z-10">
+        <div className="container max-w-6xl flex items-center justify-between h-16">
           <div className="flex items-center gap-2">
-            <div className="bg-gradient-to-r from-mesh-primary to-mesh-tertiary rounded-md p-0.5 mr-2">
-              <div className="bg-background rounded-sm p-1.5">
+            <div className="bg-gradient-to-r from-mesh-purple to-mesh-blue rounded-md p-0.5 mr-2">
+              <div className="bg-mesh-background rounded-sm p-1.5">
                 <div className="flex items-center space-x-1">
-                  <div className="w-2 h-2 rounded-full bg-mesh-primary animate-pulse" />
-                  <div className="w-2 h-2 rounded-full bg-mesh-secondary animate-pulse" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-mesh-tertiary animate-pulse" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-2 h-2 rounded-full bg-mesh-purple animate-pulse" />
+                  <div className="w-2 h-2 rounded-full bg-mesh-blue animate-pulse" style={{ animationDelay: '0.2s' }} />
+                  <div className="w-2 h-2 rounded-full bg-mesh-green animate-pulse" style={{ animationDelay: '0.4s' }} />
                 </div>
               </div>
             </div>
-            <h1 className="font-bold text-xl bg-gradient-to-r from-white via-purple-200 to-white bg-clip-text text-transparent">AI Mesh</h1>
+            <h1 className="font-bold text-xl gradient-text">AI Mesh</h1>
             <Separator orientation="vertical" className="h-6 mx-2" />
             <ProjectManager />
           </div>
           <div className="flex items-center gap-2">
+            <EnhancedTooltip content={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
+              <Button variant="outline" size="icon" className="rounded-full h-8 w-8 transition-all hover:shadow-glow" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
+              </Button>
+            </EnhancedTooltip>
+            
             <EnhancedTooltip content="Learn how to use AI Mesh effectively">
-              <Button variant="outline" size="sm" className="transition-all hover:bg-secondary/80">
+              <Button variant="outline" size="sm" className="transition-all hover:shadow-glow">
                 <Info className="h-4 w-4 mr-2" />
                 Help
               </Button>
             </EnhancedTooltip>
+            
             <EnhancedTooltip content="Configure application settings and preferences">
-              <Button variant="outline" size="sm" className="transition-all hover:bg-secondary/80">
+              <Button variant="outline" size="sm" className="transition-all hover:shadow-glow">
                 <Settings className="h-4 w-4 mr-2" />
                 Settings
               </Button>
@@ -60,16 +80,16 @@ const MainLayout: React.FC = () => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 container py-6 grid gap-6 grid-cols-1 lg:grid-cols-12">
+      <main className="flex-1 container max-w-6xl py-6 grid gap-6 grid-cols-1 lg:grid-cols-12">
         {/* Left Column */}
         <div className="lg:col-span-4 space-y-6">
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium flex items-center">
-                <span className="bg-gradient-to-r from-mesh-primary to-mesh-tertiary bg-clip-text text-transparent">Prompt & Settings</span>
+              <h2 className="text-lg font-medium flex items-center gradient-text">
+                Prompt & Settings
               </h2>
             </div>
-            <Card className="border border-white/10 bg-card/50 backdrop-blur-sm shadow-lg">
+            <Card className="mesh-card">
               <CardContent className="pt-6">
                 <PromptInput />
               </CardContent>
@@ -78,8 +98,8 @@ const MainLayout: React.FC = () => {
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-medium">
-                <span className="bg-gradient-to-r from-mesh-primary to-mesh-tertiary bg-clip-text text-transparent">AI Agents</span>
+              <h2 className="text-lg font-medium gradient-text">
+                AI Agents
               </h2>
               <EnhancedTooltip content="Add a new AI agent to your conversation">
                 <div>
@@ -95,11 +115,11 @@ const MainLayout: React.FC = () => {
               ) : (
                 <Card className="border-dashed border-white/10 bg-card/50 backdrop-blur-sm">
                   <CardContent className="p-6 flex flex-col items-center justify-center text-center">
-                    <div className="rounded-full bg-muted p-3 mb-4">
-                      <Sparkles className="h-6 w-6 text-mesh-primary" />
+                    <div className="rounded-full bg-mesh-purple/20 p-3 mb-4">
+                      <Sparkles className="h-6 w-6 text-mesh-purple" />
                     </div>
                     <h3 className="font-medium mb-2">No Agents Configured</h3>
-                    <p className="text-muted-foreground text-sm mb-4">
+                    <p className="text-mesh-textSecondary text-sm mb-4">
                       Add AI agents to create a collaborative conversation
                     </p>
                     <AddAgentButton />
@@ -112,11 +132,11 @@ const MainLayout: React.FC = () => {
 
         {/* Right Column */}
         <div className="lg:col-span-8 grid grid-rows-2 gap-6 h-[calc(100vh-9rem)]">
-          <Card className="overflow-hidden border border-white/10 bg-card/50 backdrop-blur-sm shadow-lg">
-            <CardHeader className="p-4 border-b border-border/50">
+          <Card className="overflow-hidden mesh-card">
+            <CardHeader className="p-4 border-b border-white/10">
               <div className="flex items-center justify-between">
                 <div>
-                  <CardTitle className="bg-gradient-to-r from-mesh-primary to-mesh-tertiary bg-clip-text text-transparent">Conversation</CardTitle>
+                  <CardTitle className="gradient-text">Conversation</CardTitle>
                   <CardDescription>
                     AI agents working together on your prompt
                   </CardDescription>
@@ -128,21 +148,21 @@ const MainLayout: React.FC = () => {
             </ScrollArea>
           </Card>
           
-          <Card className="overflow-hidden border border-white/10 bg-card/50 backdrop-blur-sm shadow-lg">
+          <Card className="overflow-hidden mesh-card">
             <FinalOutputPanel />
           </Card>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 py-4 backdrop-blur-sm bg-background/80">
-        <div className="container flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+      <footer className="border-t border-white/10 py-4 backdrop-blur-sm bg-black/50">
+        <div className="container max-w-6xl flex items-center justify-between">
+          <div className="text-sm text-mesh-textSecondary">
             AI Mesh — Orchestrate conversations between multiple AIs
           </div>
           <div className="flex items-center space-x-4">
             <EnhancedTooltip content="View source code on GitHub">
-              <a href="#" className="text-sm text-muted-foreground hover:text-foreground transition-colors">
+              <a href="#" className="text-sm text-mesh-textSecondary hover:text-mesh-textPrimary transition-colors">
                 <div className="flex items-center">
                   <Github className="h-4 w-4 mr-1" />
                   <span>GitHub</span>

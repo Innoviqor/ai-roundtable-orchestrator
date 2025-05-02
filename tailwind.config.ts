@@ -63,12 +63,16 @@ export default {
 					border: 'hsl(var(--sidebar-border))',
 					ring: 'hsl(var(--sidebar-ring))'
 				},
+				// New mesh-specific colors based on the style guide
 				mesh: {
-					primary: '#9b87f5',
-					secondary: '#7E69AB',
-					tertiary: '#6E59A5',
-					dark: '#1A1F2C',
-					light: '#D6BCFA',
+					background: '#0D0D0D', // soft black
+					card: '#1E1E2F',       // charcoal purple
+					purple: '#7F5AF0',     // accent purple
+					blue: '#00B2FF',       // accent blue
+					green: '#22C55E',      // accent green
+					red: '#F43F5E',        // accent red
+					textPrimary: '#FFFFFF',  // text primary
+					textSecondary: '#A1A1AA', // text secondary
 				}
 			},
 			borderRadius: {
@@ -96,13 +100,37 @@ export default {
 				'pulse-slow': {
 					'0%, 100%': { opacity: '1' },
 					'50%': { opacity: '0.5' }
-				}
+				},
+				'gradient-flow': {
+					'0%, 100%': { backgroundPosition: '0% 50%' },
+					'50%': { backgroundPosition: '100% 50%' },
+				},
+                'thinking': {
+                    '0%, 100%': { opacity: '0.4' },
+                    '50%': { opacity: '1' }
+                }
 			},
 			animation: {
 				'accordion-down': 'accordion-down 0.2s ease-out',
 				'accordion-up': 'accordion-up 0.2s ease-out',
-				'pulse-slow': 'pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-			}
+				'pulse-slow': 'pulse-slow 2s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+				'gradient-flow': 'gradient-flow 3s ease infinite',
+                'thinking': 'thinking 1.5s infinite ease-in-out'
+			},
+            fontFamily: {
+                'sans': ['Inter', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+                'display': ['Space Grotesk', 'Inter', 'ui-sans-serif', 'system-ui', 'sans-serif']
+            },
+            boxShadow: {
+                'glow': '0 0 15px -3px rgba(127, 90, 240, 0.4)',
+                'glow-blue': '0 0 15px -3px rgba(0, 178, 255, 0.4)',
+                'glow-green': '0 0 15px -3px rgba(34, 197, 94, 0.4)',
+                'glow-red': '0 0 15px -3px rgba(244, 63, 94, 0.4)',
+            },
+            backgroundImage: {
+                'gradient-card': 'linear-gradient(to bottom right, rgba(127, 90, 240, 0.2), rgba(0, 0, 0, 0))',
+                'gradient-mesh': 'radial-gradient(at 50% 0%, rgba(127, 90, 240, 0.2) 0%, transparent 70%)',
+            }
 		}
 	},
 	plugins: [require("tailwindcss-animate")],

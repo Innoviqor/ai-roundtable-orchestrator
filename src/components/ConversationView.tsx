@@ -8,7 +8,8 @@ import { toast } from 'sonner';
 
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
-import { AlertCircle, Loader2 } from 'lucide-react';
+import { AlertCircle, Crown, Loader2 } from 'lucide-react';
+import { EnhancedTooltip } from './ui/enhanced-tooltip';
 
 const ConversationView: React.FC = () => {
   const { currentProject, addMessage, updateMessage, isRunning, setIsRunning } = useProject();
@@ -27,8 +28,51 @@ const ConversationView: React.FC = () => {
       
       const { agents, prompt, conversationMode } = currentProject;
       
-      if (conversationMode === 'sequential') {
-        // Run agents one by one
+      // Check if there's a leader agent
+      const leaderAgent = agents.find(agent => agent.isLeader);
+      
+      if (leaderAgent) {
+        // Leader-directed conversation
+        setThinking(leaderAgent.id);
+        
+        try {
+          // Get leader's directives first
+          const leaderDirective = await callAgent(
+            leaderAgent, 
+            `You are the leader. Based on this request: "${prompt}", provide clear instructions for each team member to follow. Your goal is to coordinate the team's effort.`, 
+            []
+          );
+          
+          addMessage(leaderDirective);
+          
+          // Now process other agents sequentially with leader's guidance
+          for (const agent of agents.filter(a => a.id !== leaderAgent.id)) {
+            if (!isRunning) break; // Check if we should stop
+            
+            setThinking(agent.id);
+            
+            try {
+              // Include the leader's directive in the context
+              const message = await callAgent(
+                agent, 
+                prompt,
+                [...currentProject.messages, leaderDirective] // Include leader's directive
+              );
+              
+              addMessage(message);
+            } catch (error) {
+              console.error(`Error with agent ${agent.name}:`, error);
+              toast.error(`Failed to get response from ${agent.name}`);
+            }
+          }
+        } catch (error) {
+          console.error(`Error with leader ${leaderAgent.name}:`, error);
+          toast.error(`Failed to get response from leader ${leaderAgent.name}`);
+        } finally {
+          setThinking(null);
+        }
+      } else if (conversationMode === 'sequential') {
+        // Traditional sequential mode (no leader)
         for (let i = 0; i < agents.length; i++) {
           if (!isRunning) break; // Check if we should stop
           
@@ -47,7 +91,7 @@ const ConversationView: React.FC = () => {
           }
         }
       } else {
-        // Run all agents simultaneously
+        // Simultaneous mode (no leader)
         setThinking('all');
         
         try {
@@ -86,13 +130,13 @@ const ConversationView: React.FC = () => {
   if (currentProject.messages.length === 0 && !thinking) {
     return (
       <div className="h-full flex flex-col items-center justify-center text-center p-8">
-        <div className="rounded-full bg-muted p-3 mb-4">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-foreground">
+        <div className="rounded-full bg-mesh-purple/20 p-3 mb-4">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mesh-purple">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
           </svg>
         </div>
         <h3 className="font-medium text-lg">No Conversation Yet</h3>
-        <p className="text-muted-foreground mt-2 max-w-sm">
+        <p className="text-mesh-textSecondary mt-2 max-w-sm">
           Enter a prompt and run the conversation to see your AI agents work together.
         </p>
       </div>
@@ -109,20 +153,29 @@ const ConversationView: React.FC = () => {
           const avatarColor = getAgentColorByPlatform(agent.platform);
           
           return (
-            <div key={message.id} className="flex flex-col space-y-2">
+            <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
               <div className="flex items-start space-x-3">
-                <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1`}>
-                  {getAgentInitial(agent.name)}
+                <div className="flex flex-col items-center">
+                  <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
+                    {getAgentInitial(agent.name)}
+                  </div>
+                  {agent.isLeader && (
+                    <EnhancedTooltip content="This agent is leading the conversation">
+                      <Crown size={14} className="leader-crown mt-1" />
+                    </EnhancedTooltip>
+                  )}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
                     <span className="font-medium">{agent.name}</span>
-                    <span className="text-xs text-muted-foreground">{formatTimestamp(message.timestamp)}</span>
-                    <span className="text-xs bg-secondary text-secondary-foreground px-2 py-0.5 rounded-full">
-                      {agent.role}
-                    </span>
+                    <span className="text-xs text-mesh-textSecondary">{formatTimestamp(message.timestamp)}</span>
+                    <EnhancedTooltip content={`This agent's role is: ${agent.role}`}>
+                      <span className="text-xs bg-mesh-purple/10 text-mesh-purple px-2 py-0.5 rounded-full">
+                        {agent.role}
+                      </span>
+                    </EnhancedTooltip>
                   </div>
-                  <div className="mt-1 text-sm whitespace-pre-wrap">
+                  <div className="mt-1 text-sm whitespace-pre-wrap bg-black/20 p-3 rounded-lg border border-white/5">
                     {message.content}
                   </div>
                 </div>
@@ -132,9 +185,9 @@ const ConversationView: React.FC = () => {
         })}
 
         {thinking && (
-          <div className="flex flex-col space-y-2">
+          <div className="flex flex-col space-y-2 animate-fade-in">
             {thinking === 'all' ? (
-              <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+              <div className="flex items-center space-x-2 text-sm text-mesh-textSecondary">
                 <Loader2 className="animate-spin h-4 w-4" />
                 <span>Multiple agents are thinking...</span>
               </div>
@@ -147,16 +200,27 @@ const ConversationView: React.FC = () => {
                   
                   return (
                     <div key={agent.id} className="flex items-start space-x-3">
-                      <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1`}>
-                        {getAgentInitial(agent.name)}
+                      <div className="flex flex-col items-center">
+                        <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
+                          {getAgentInitial(agent.name)}
+                        </div>
+                        {agent.isLeader && (
+                          <EnhancedTooltip content="This agent is leading the conversation">
+                            <Crown size={14} className="leader-crown mt-1" />
+                          </EnhancedTooltip>
+                        )}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
                           <span className="font-medium">{agent.name}</span>
-                          <span className="text-xs text-muted-foreground">{formatTimestamp(Date.now())}</span>
+                          <span className="text-xs text-mesh-textSecondary">{formatTimestamp(Date.now())}</span>
                         </div>
-                        <div className="mt-1 text-sm flex items-center space-x-2 text-muted-foreground">
-                          <Loader2 className="animate-spin h-4 w-4" />
+                        <div className="mt-1 text-sm flex items-center space-x-2 text-mesh-textSecondary bg-black/20 p-3 rounded-lg border border-white/5">
+                          <div className="flex space-x-1 items-center">
+                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking"></div>
+                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{ animationDelay: '0.2s' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{ animationDelay: '0.4s' }}></div>
+                          </div>
                           <span>Thinking...</span>
                         </div>
                       </div>

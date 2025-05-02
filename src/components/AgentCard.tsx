@@ -4,12 +4,14 @@ import { useProject } from '@/contexts/ProjectContext';
 import { AIAgent, AgentType, AIPlatform } from '@/types';
 import { getAgentColorByPlatform, getAgentInitial } from '@/utils/helpers';
 import { mockPlatformExamplePrompts } from '@/utils/mockAgentHandlers';
+import LeaderToggle from './LeaderToggle';
 
 import { Card, CardContent, CardFooter, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { EnhancedTooltip } from '@/components/ui/enhanced-tooltip';
 import {
   Trash2,
   Copy,
@@ -22,7 +24,6 @@ import {
 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { Label } from '@/components/ui/label';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 
 interface AgentCardProps {
@@ -70,57 +71,56 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
   const avatarColor = getAgentColorByPlatform(agent.platform);
   
   return (
-    <Card className="w-full">
+    <Card className="mesh-card w-full">
       <CardHeader className="p-4 pb-0">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium`}>
+            <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium shadow-md`}>
               {getAgentInitial(agent.name)}
             </div>
             <div className="flex-1">
               <Input
                 value={agent.name}
                 onChange={(e) => updateAgent(agent.id, { name: e.target.value })}
-                className="font-medium bg-transparent border-transparent hover:border-input focus:border-input"
+                className="font-medium bg-transparent border-transparent hover:border-mesh-purple/50 focus:border-mesh-purple/50 focus:bg-black/20"
                 placeholder="Agent Name"
               />
             </div>
           </div>
           <div className="flex items-center space-x-1">
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={() => setExpanded(!expanded)}
-              className="h-8 w-8 p-0"
-            >
-              {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-            </Button>
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={duplicateAgent}
-                  className="h-8 w-8 p-0"
-                >
-                  <Copy size={16} />
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent>
-                <p>Duplicate Agent</p>
-              </TooltipContent>
-            </Tooltip>
+            <EnhancedTooltip content={expanded ? "Collapse agent details" : "Expand agent details"}>
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={() => setExpanded(!expanded)}
+                className="h-8 w-8 p-0 hover:bg-mesh-purple/10"
+              >
+                {expanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+              </Button>
+            </EnhancedTooltip>
+            <EnhancedTooltip content="Duplicate this agent">
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={duplicateAgent}
+                className="h-8 w-8 p-0 hover:bg-mesh-purple/10"
+              >
+                <Copy size={16} />
+              </Button>
+            </EnhancedTooltip>
             <Dialog>
               <DialogTrigger asChild>
-                <Button 
-                  variant="ghost" 
-                  size="sm"
-                  className="h-8 w-8 p-0 text-destructive hover:text-destructive"
-                >
-                  <Trash2 size={16} />
-                </Button>
+                <EnhancedTooltip content="Delete this agent">
+                  <Button 
+                    variant="ghost" 
+                    size="sm"
+                    className="h-8 w-8 p-0 text-destructive hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 size={16} />
+                  </Button>
+                </EnhancedTooltip>
               </DialogTrigger>
-              <DialogContent>
+              <DialogContent className="glassmorphism">
                 <DialogHeader>
                   <DialogTitle>Delete Agent</DialogTitle>
                   <DialogDescription>
@@ -147,7 +147,15 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
         </div>
       </CardHeader>
 
-      <CardContent className={`px-4 pb-4 pt-0 ${expanded ? 'block' : 'hidden'}`}>
+      <CardContent className="px-4 pb-0 pt-2">
+        {/* Leader toggle - always visible */}
+        <div className="flex justify-between items-center">
+          <div className="text-xs text-mesh-textSecondary">{agent.role}</div>
+          <LeaderToggle agent={agent} />
+        </div>
+      </CardContent>
+
+      <CardContent className={`px-4 pb-4 pt-0 transition-all duration-300 ${expanded ? 'max-h-[800px] opacity-100' : 'max-h-0 opacity-0 overflow-hidden'}`}>
         <div className="grid gap-4 mt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -156,7 +164,7 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
                 value={agent.role}
                 onChange={(e) => updateAgent(agent.id, { role: e.target.value })}
                 placeholder="e.g., Developer, Designer, Critic"
-                className="w-full"
+                className="w-full mesh-input"
               />
             </div>
 
@@ -166,10 +174,10 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
                 value={agent.platform}
                 onValueChange={handlePlatformChange}
               >
-                <SelectTrigger className="w-full">
+                <SelectTrigger className="w-full mesh-input">
                   <SelectValue placeholder="Select a platform" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="glassmorphism">
                   <SelectGroup>
                     {PLATFORMS.map((platform) => (
                       <SelectItem key={platform} value={platform}>
@@ -185,25 +193,27 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
           <div>
             <div className="flex justify-between items-center mb-1">
               <label className="text-sm font-medium">System Prompt</label>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-6 text-xs"
-                onClick={() => {
-                  const platformPrompt = mockPlatformExamplePrompts[agent.platform];
-                  if (platformPrompt) {
-                    updateAgent(agent.id, { systemPrompt: platformPrompt });
-                  }
-                }}
-              >
-                Use Default
-              </Button>
+              <EnhancedTooltip content="Use the default prompt for this AI platform">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="h-6 text-xs hover:bg-mesh-purple/10"
+                  onClick={() => {
+                    const platformPrompt = mockPlatformExamplePrompts[agent.platform];
+                    if (platformPrompt) {
+                      updateAgent(agent.id, { systemPrompt: platformPrompt });
+                    }
+                  }}
+                >
+                  Use Default
+                </Button>
+              </EnhancedTooltip>
             </div>
             <Textarea
               value={agent.systemPrompt}
               onChange={(e) => updateAgent(agent.id, { systemPrompt: e.target.value })}
               placeholder="Instructions that define how this agent should behave"
-              className="w-full min-h-[100px]"
+              className="w-full min-h-[100px] mesh-input"
             />
           </div>
 
@@ -216,7 +226,7 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
                   value={agent.apiKey || ''}
                   onChange={(e) => updateAgent(agent.id, { apiKey: e.target.value })}
                   placeholder="Enter API key for this service"
-                  className="w-full pr-9"
+                  className="w-full pr-9 mesh-input"
                 />
                 <Button
                   type="button"
@@ -262,12 +272,14 @@ const AgentCard: React.FC<AgentCardProps> = ({ agent }) => {
         </div>
       </CardContent>
 
-      <CardFooter className={`px-4 pt-0 pb-4 ${expanded ? 'block' : 'hidden'}`}>
+      <CardFooter className={`px-4 pt-0 pb-4 transition-all duration-300 ${expanded ? 'block' : 'hidden'}`}>
         <div className="flex justify-end">
-          <Button variant="outline" size="sm" className="text-xs">
-            <Settings size={12} className="mr-1" />
-            Advanced Settings
-          </Button>
+          <EnhancedTooltip content="Configure advanced settings for this agent">
+            <Button variant="outline" size="sm" className="text-xs hover:bg-mesh-purple/10">
+              <Settings size={12} className="mr-1" />
+              Advanced Settings
+            </Button>
+          </EnhancedTooltip>
         </div>
       </CardFooter>
     </Card>

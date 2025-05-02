@@ -14,8 +14,8 @@
     --popover: 240 10% 3.9%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 263 70% 75%;
-    --primary-foreground: 240 5.9% 10%;
+    --primary: 265 70% 60%;
+    --primary-foreground: 0 0% 98%;
 
     --secondary: 240 3.7% 15.9%;
     --secondary-foreground: 0 0% 98%;
@@ -32,6 +32,7 @@
     --border: 240 3.7% 15.9%;
     --input: 240 3.7% 15.9%;
     --ring: 240 4.9% 83.9%;
+    
     --sidebar-background: 240 10% 3.9%;
     --sidebar-foreground: 240 4.8% 95.9%;
     --sidebar-primary: 263 70% 75%;
@@ -40,6 +41,8 @@
     --sidebar-accent-foreground: 240 4.8% 95.9%;
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 240 4.9% 83.9%;
+    
+    --radius: 0.5rem;
   }
 
   .light {
@@ -52,7 +55,7 @@
     --popover: 0 0% 100%;
     --popover-foreground: 240 10% 3.9%;
 
-    --primary: 263 70% 60%;
+    --primary: 265 70% 60%;
     --primary-foreground: 0 0% 98%;
 
     --secondary: 240 4.8% 95.9%;
@@ -70,6 +73,7 @@
     --border: 240 5.9% 90%;
     --input: 240 5.9% 90%;
     --ring: 240 5.9% 10%;
+    
     --sidebar-background: 0 0% 98%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
@@ -86,37 +90,43 @@
     @apply border-border;
   }
 
+  html, body {
+    @apply font-sans antialiased;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-mesh-background text-mesh-textPrimary;
   }
   
-  /* Animation for text gradient */
-  .animated-gradient-text {
-    @apply bg-gradient-to-r bg-clip-text text-transparent animate-gradient;
-    background-size: 200% auto;
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display;
   }
 }
 
 @layer components {
   .mesh-card {
-    @apply border border-white/10 bg-background/50 backdrop-blur-sm shadow-lg;
-    background-image: radial-gradient(at 50% 0%, rgba(155, 135, 245, 0.1) 0%, transparent 70%);
+    @apply bg-mesh-card border border-white/10 rounded-lg shadow-md backdrop-blur-sm;
+    background-image: linear-gradient(to bottom right, rgba(127, 90, 240, 0.1), transparent);
   }
   
-  .mesh-border {
-    @apply border border-white/10 shadow-sm;
-    position: relative;
-    overflow: hidden;
+  .mesh-input {
+    @apply bg-black/20 border border-white/10 rounded-md focus:ring-2 focus:ring-mesh-purple/50 focus:border-mesh-purple/50 transition-all duration-200;
   }
   
-  .mesh-border::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 1px;
-    background: linear-gradient(to right, transparent, rgba(155, 135, 245, 0.5), transparent);
+  .mesh-button {
+    @apply bg-mesh-purple text-white px-4 py-2 rounded-md hover:shadow-glow transition-all duration-200;
+  }
+  
+  .mesh-tag {
+    @apply text-xs px-2 py-0.5 rounded-full bg-mesh-purple/20 text-mesh-purple;
+  }
+
+  .glassmorphism {
+    @apply bg-black/30 backdrop-blur-md border border-white/10 rounded-lg;
+  }
+  
+  .gradient-text {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-mesh-purple to-mesh-blue animate-gradient-flow;
   }
 }
 
@@ -145,6 +155,10 @@
   .animate-fade-in {
     animation: fadeIn 0.5s ease-in-out;
   }
+  
+  .text-shadow {
+    text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
 }
 
 @keyframes gradient {
@@ -172,9 +186,47 @@
 
 @keyframes pulseGlow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(155, 135, 245, 0.5);
+    box-shadow: 0 0 5px rgba(127, 90, 240, 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(155, 135, 245, 0.8);
+    box-shadow: 0 0 20px rgba(127, 90, 240, 0.8);
   }
+}
+
+/* Special agent color representations */
+.agent-openai {
+  @apply bg-mesh-blue text-white;
+}
+
+.agent-anthropic {
+  @apply bg-[#D766AB] text-white; /* Anthropic Pink */
+}
+
+.agent-google {
+  @apply bg-[#4285F4] text-white; /* Google Blue */
+}
+
+.agent-meta {
+  @apply bg-[#0081FB] text-white; /* Meta Blue */
+}
+
+.agent-lovable {
+  @apply bg-mesh-purple text-white;
+}
+
+.agent-canva {
+  @apply bg-[#00C4CC] text-white; /* Canva Teal */
+}
+
+.agent-local {
+  @apply bg-mesh-green text-white;
+}
+
+.agent-other {
+  @apply bg-gray-500 text-white;
+}
+
+/* Leader indicator styles */
+.leader-crown {
+  @apply text-yellow-400 drop-shadow-md;
 }
