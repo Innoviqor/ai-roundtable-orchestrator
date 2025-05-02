@@ -31,7 +31,7 @@ const AddAgentButton: React.FC = () => {
       const examplePrompt = mockPlatformExamplePrompts[platformValue] || '';
       setNewAgent(prev => ({ 
         ...prev, 
-        [field]: value,
+        platform: platformValue,
         systemPrompt: examplePrompt
       }));
     }
@@ -47,7 +47,7 @@ const AddAgentButton: React.FC = () => {
       name: newAgent.name || 'New Agent',
       role: newAgent.role || 'Assistant',
       systemPrompt: newAgent.systemPrompt || '',
-      platform: newAgent.platform || 'OpenAI',
+      platform: newAgent.platform as AIPlatform || 'OpenAI',
       type: newAgent.type || 'chat'
     });
 
@@ -55,9 +55,9 @@ const AddAgentButton: React.FC = () => {
     setNewAgent({
       name: '',
       role: '',
-      platform: 'OpenAI',
+      platform: 'OpenAI' as AIPlatform,
       systemPrompt: mockPlatformExamplePrompts['OpenAI'],
-      type: 'chat'
+      type: 'chat' as AgentType
     });
     
     setOpen(false);
