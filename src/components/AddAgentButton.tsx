@@ -10,6 +10,7 @@ import { AIAgent, AIPlatform, AgentType } from '@/types';
 import { generateId } from '@/utils/helpers';
 import { mockPlatformExamplePrompts } from '@/utils/mockAgentHandlers';
 import { Plus } from 'lucide-react';
+import { toast } from 'sonner';
 
 const AddAgentButton: React.FC = () => {
   const { addAgent } = useProject();
@@ -39,6 +40,7 @@ const AddAgentButton: React.FC = () => {
 
   const handleAddAgent = () => {
     if (!newAgent.name || !newAgent.role) {
+      toast.error("Agent name and role are required");
       return;
     }
 
@@ -48,8 +50,11 @@ const AddAgentButton: React.FC = () => {
       role: newAgent.role || 'Assistant',
       systemPrompt: newAgent.systemPrompt || '',
       platform: newAgent.platform as AIPlatform || 'OpenAI',
-      type: newAgent.type || 'chat'
+      type: newAgent.type as AgentType || 'chat',
+      apiKey: newAgent.apiKey
     });
+
+    toast.success(`Added new agent: ${newAgent.name}`);
 
     // Reset form and close dialog
     setNewAgent({
@@ -129,6 +134,20 @@ const AddAgentButton: React.FC = () => {
                 <SelectItem value="Other">Other</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="grid grid-cols-4 items-center gap-4">
+            <label htmlFor="agent-api-key" className="text-right text-sm font-medium">
+              API Key
+            </label>
+            <Input
+              id="agent-api-key"
+              type="password"
+              value={newAgent.apiKey || ''}
+              onChange={(e) => handleChange('apiKey', e.target.value)}
+              placeholder={`Enter ${newAgent.platform} API key`}
+              className="col-span-3"
+            />
           </div>
           
           <div className="grid grid-cols-4 items-center gap-4">

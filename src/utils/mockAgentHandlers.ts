@@ -1,6 +1,6 @@
-
-import { AIAgent, Message } from "@/types";
+import { AIAgent, Message, AIPlatform } from "@/types";
 import { generateId, simulateAgentResponse } from "./helpers";
+import { callExternalAI } from "@/services/aiService";
 
 export const callAgent = async (
   agent: AIAgent,
@@ -8,9 +8,28 @@ export const callAgent = async (
   previousMessages: Message[]
 ): Promise<Message> => {
   try {
-    // In a real app, we would make actual API calls to different services
-    // For now, we'll simulate responses
-    const content = await simulateAgentResponse(agent, prompt, previousMessages);
+    let content: string;
+    
+    // Check if we should use real API or mock
+    const shouldUseMockResponse = 
+      !agent.apiKey && agent.platform !== 'Local' || 
+      process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_MOCK_AI === 'true';
+    
+    if (shouldUseMockResponse) {
+      // Use mock response if no API key provided or explicitly in mock mode
+      content = await simulateAgentResponse(agent, prompt, previousMessages);
+      console.log(`Using mock response for ${agent.name} (${agent.platform})`);
+    } else {
+      // Call actual external AI API
+      try {
+        content = await callExternalAI(agent, prompt, previousMessages);
+      } catch (error) {
+        console.error(`Error calling external AI for ${agent.name}:`, error);
+        // Fallback to mock if API call fails
+        content = await simulateAgentResponse(agent, prompt, previousMessages);
+        content = `[API Error Fallback] ${content}`;
+      }
+    }
     
     return {
       id: generateId(),
