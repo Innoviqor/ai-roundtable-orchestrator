@@ -70,19 +70,20 @@ const Conversation: React.FC = () => {
             
             <div className="space-y-6 my-4">
               {exampleMessages.map(message => {
-                const agent = message.agentId === 'user' ? {
+                const messageAgent = message.agentId === 'user' ? {
+                  id: 'user',
                   name: 'User',
                   role: 'Prompt',
                   platform: 'user'
                 } : exampleAgents.find(a => a.id === message.agentId);
                 
-                if (!agent) return null;
+                if (!messageAgent) return null;
                 
                 return (
                   <MessageBubble 
                     key={message.id} 
                     message={message} 
-                    agent={agent} 
+                    agent={messageAgent} 
                   />
                 );
               })}

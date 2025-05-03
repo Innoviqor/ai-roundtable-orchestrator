@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { AIAgent, ConversationMode, Message, Project } from '@/types';
 import { generateId, getProjectsFromLocalStorage, saveProjectToLocalStorage } from '@/utils/helpers';
@@ -9,6 +8,7 @@ interface ProjectContextProps {
   currentProject: Project;
   allProjects: Project[];
   isRunning: boolean;
+  thinking: string | null;
   createNewProject: (name: string) => void;
   updateProject: (project: Partial<Project>) => void;
   addAgent: (agent: AIAgent) => void;
@@ -20,6 +20,7 @@ interface ProjectContextProps {
   loadProject: (projectId: string) => void;
   exportProject: () => void;
   setIsRunning: (running: boolean) => void;
+  setThinking: (agentId: string | null) => void;
 }
 
 const ProjectContext = createContext<ProjectContextProps | undefined>(undefined);
@@ -43,6 +44,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     maxConversationRounds: 10, // Default to 10 rounds max to prevent infinite loops
   });
   const [isRunning, setIsRunning] = useState(false);
+  const [thinking, setThinking] = useState<string | null>(null);
 
   // Load projects from localStorage on initial render
   useEffect(() => {
@@ -159,6 +161,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     currentProject,
     allProjects,
     isRunning,
+    thinking,
     createNewProject,
     updateProject,
     addAgent,
@@ -170,6 +173,7 @@ export const ProjectProvider: React.FC<ProjectProviderProps> = ({ children }) =>
     loadProject,
     exportProject,
     setIsRunning,
+    setThinking,
   };
 
   return (

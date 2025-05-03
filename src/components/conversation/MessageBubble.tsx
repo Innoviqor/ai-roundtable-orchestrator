@@ -4,7 +4,7 @@ import { formatTimestamp, getAgentColorByPlatform, getAgentInitial } from '@/uti
 import { EnhancedTooltip } from '@/components/ui/enhanced-tooltip';
 import { Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import { Message } from '@/types';
+import { Message, AIPlatform } from '@/types';
 
 interface MessageBubbleProps {
   message: Message;
@@ -18,7 +18,7 @@ interface MessageBubbleProps {
 }
 
 const MessageBubble: React.FC<MessageBubbleProps> = ({ message, agent }) => {
-  const avatarColor = getAgentColorByPlatform(agent.platform);
+  const avatarColor = getAgentColorByPlatform(agent.platform as AIPlatform);
   
   return (
     <div className="flex flex-col space-y-2 animate-fade-in">

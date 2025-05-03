@@ -2,6 +2,7 @@
 import React from 'react';
 import { Loader2 } from 'lucide-react';
 import { getAgentColorByPlatform, getAgentInitial, formatTimestamp } from '@/utils/helpers';
+import { AIPlatform } from '@/types';
 
 interface ThinkingIndicatorProps {
   thinking: string | null;
@@ -29,7 +30,7 @@ const ThinkingIndicator: React.FC<ThinkingIndicatorProps> = ({ thinking, agents 
   const thinkingAgent = agents.find(agent => agent.id === thinking);
   if (!thinkingAgent) return null;
 
-  const avatarColor = getAgentColorByPlatform(thinkingAgent.platform);
+  const avatarColor = getAgentColorByPlatform(thinkingAgent.platform as AIPlatform);
 
   return (
     <div className="flex items-start space-x-4 animate-fade-in p-4">
