@@ -46,6 +46,11 @@ const MainLayout: React.FC = () => {
   const { open, toggleSidebar } = useSidebar();
   const [showOutputDialog, setShowOutputDialog] = useState(false);
 
+  // Custom sidebar width variables - DOUBLED the width
+  const sidebarWidth = "32rem"; // Doubled from 16rem
+  const sidebarWidthIcon = "3rem";
+  const sidebarWidthMobile = "90%"; // Adjusted for mobile
+
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
     setTheme(newTheme);
@@ -169,8 +174,14 @@ const MainLayout: React.FC = () => {
 
       {/* Main Content with Sidebar */}
       <div className="flex flex-1 overflow-hidden">
-        {/* Left Sidebar (Collapsible) */}
-        <Sidebar collapsible="icon">
+        {/* Left Sidebar (Collapsible) with custom width */}
+        <Sidebar collapsible="icon" 
+          style={{ 
+            '--sidebar-width': sidebarWidth, 
+            '--sidebar-width-icon': sidebarWidthIcon,
+            '--sidebar-width-mobile': sidebarWidthMobile 
+          } as React.CSSProperties}
+        >
           <SidebarRail />
           <SidebarHeader className="flex items-center">
             <div className="text-lg font-medium gradient-text px-2">Configure</div>
