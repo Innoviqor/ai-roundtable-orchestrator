@@ -18,7 +18,7 @@ const MainLayout: React.FC = () => {
   const { open, toggleSidebar } = useSidebar();
   
   // Custom sidebar width variables
-  const sidebarWidth = "min(360px, 30vw)";  // Updated width
+  const sidebarWidth = "min(360px, 30vw)";
   const sidebarWidthIcon = "3rem";
   const sidebarWidthMobile = "90%";
 
@@ -47,7 +47,7 @@ const MainLayout: React.FC = () => {
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar (Collapsible) */}
         <SidebarUI 
-          collapsible="icon" 
+          collapsible="offcanvas" 
           style={{
             '--sidebar-width': sidebarWidth,
             '--sidebar-width-icon': sidebarWidthIcon,
@@ -60,7 +60,7 @@ const MainLayout: React.FC = () => {
             <Button 
               variant="outline" 
               size="icon" 
-              className="rounded-full h-8 w-8 ml-auto transition-all hover:shadow-glow lg:hidden" 
+              className="rounded-full h-8 w-8 ml-auto transition-all hover:shadow-glow" 
               onClick={toggleSidebar}
             >
               {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}

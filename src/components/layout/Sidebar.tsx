@@ -16,7 +16,7 @@ const Sidebar: React.FC = () => {
   const [agentsSectionOpen, setAgentsSectionOpen] = React.useState(true);
 
   return (
-    <div className="space-y-6 p-4 overflow-y-auto">
+    <div className="space-y-6 p-4 overflow-y-auto h-full">
       {/* Prompt & Settings Section */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -32,7 +32,7 @@ const Sidebar: React.FC = () => {
       </div>
 
       {/* Agents Section - Collapsible on Mobile */}
-      <div className="lg:block">
+      <div className="flex-1 overflow-auto">
         <Collapsible 
           open={agentsSectionOpen} 
           onOpenChange={setAgentsSectionOpen}
