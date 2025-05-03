@@ -1,5 +1,5 @@
-
 import { AIAgent, Message } from "@/types";
+import { toast } from "sonner";
 
 // Function to format messages for each AI platform
 export const formatMessagesForPlatform = (
@@ -42,37 +42,128 @@ export const formatMessagesForPlatform = (
   }
 };
 
-// Implementation of platform-specific API calls
+// Implementation of OpenAI API call
 export const callOpenAI = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling OpenAI API with:', { systemPrompt, messagesCount: messages.length });
-  // Mock implementation for demo purposes
-  return `This is a mock response from OpenAI. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    console.log('Calling OpenAI API with:', { systemPrompt, messagesCount: messages.length });
+    
+    // Add system message to the beginning of the messages array
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: messagesWithSystem,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from OpenAI');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('OpenAI API error:', error);
+    throw error;
+  }
 };
 
+// Implementation of Anthropic API call
 export const callAnthropic = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Anthropic API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Anthropic. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    console.log('Calling Anthropic API with:', { systemPrompt, messages });
+    
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'x-api-key': apiKey,
+        'anthropic-version': '2023-06-01',
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-haiku-20240307',
+        system: systemPrompt,
+        messages: messages.messages,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Anthropic');
+    }
+    
+    const data = await response.json();
+    return data.content[0].text;
+  } catch (error) {
+    console.error('Anthropic API error:', error);
+    throw error;
+  }
 };
 
+// Implementation of Google API call
 export const callGoogle = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Google API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Google. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    console.log('Calling Google API with:', { systemPrompt, messages });
+    
+    // Add system instruction to the beginning of the contents array
+    const contentsWithSystem = [
+      { role: 'system', parts: [{ text: systemPrompt }] },
+      ...messages.contents
+    ];
+    
+    const response = await fetch('https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=' + apiKey, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        contents: contentsWithSystem,
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 2000
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Google');
+    }
+    
+    const data = await response.json();
+    return data.candidates[0].content.parts[0].text;
+  } catch (error) {
+    console.error('Google API error:', error);
+    throw error;
+  }
 };
 
+// Keep other mock implementations for services that we haven't implemented yet
 export const callMeta = async (
   apiKey: string,
   messages: any,
@@ -148,39 +239,60 @@ export const callExternalAI = async (
   const formattedMessages = formatMessagesForPlatform(agent, prompt, previousMessages);
 
   try {
+    // Add analytics for tracking which AI is being called
+    console.log(`Calling ${agent.platform} API for agent: ${agent.name}`);
+    
+    // Show loading toast
+    const toastId = toast.loading(`${agent.name} is thinking...`);
+    
+    let result: string;
+    
     switch (agent.platform) {
       case 'OpenAI':
-        return await callOpenAI(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callOpenAI(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Anthropic':
-        return await callAnthropic(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callAnthropic(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Google':
-        return await callGoogle(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callGoogle(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Meta':
-        return await callMeta(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callMeta(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Canva':
-        return await callCanva(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callCanva(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Suno':
-        return await callSuno(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callSuno(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Lovable':
-        return await callLovable(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callLovable(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Local':
-        // For local, we'll use a client-side model or fallback to mock
-        return await callLocalAI(formattedMessages, agent.systemPrompt);
+        result = await callLocalAI(formattedMessages, agent.systemPrompt);
+        break;
       
       case 'Other':
       default:
-        // Generic API call for custom endpoints
-        return await callCustomAI(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callCustomAI(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
     }
+    
+    // Dismiss loading toast
+    toast.dismiss(toastId);
+    
+    return result;
   } catch (error) {
     console.error(`Error calling ${agent.platform} API:`, error);
-    throw new Error(`Failed to get response from ${agent.platform}: ${(error as Error).message}`);
+    toast.error(`Failed to get response from ${agent.platform}: ${(error as Error).message}`);
+    throw error;
   }
 };
