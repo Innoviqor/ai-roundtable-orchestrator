@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import ProjectManager from './ProjectManager';
 import AgentCard from './AgentCard';
@@ -8,42 +7,26 @@ import ConversationView from './ConversationView';
 import FinalOutputPanel from './FinalOutputPanel';
 import { useProject } from '@/contexts/ProjectContext';
 import { EnhancedTooltip } from './ui/enhanced-tooltip';
-
 import { Separator } from '@/components/ui/separator';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
-import { 
-  Github, 
-  Info, 
-  Moon, 
-  Settings, 
-  Sparkles, 
-  Sun, 
-  MenuIcon,
-  PanelLeftIcon,
-  ChevronLeft,
-  ChevronRight,
-  FileText
-} from 'lucide-react';
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarHeader,
-  SidebarFooter,
-  SidebarTrigger,
-  SidebarRail,
-  SidebarInset,
-  useSidebar
-} from '@/components/ui/sidebar';
-
+import { Github, Info, Moon, Settings, Sparkles, Sun, MenuIcon, PanelLeftIcon, ChevronLeft, ChevronRight, FileText } from 'lucide-react';
+import { Sidebar, SidebarContent, SidebarHeader, SidebarFooter, SidebarTrigger, SidebarRail, SidebarInset, useSidebar } from '@/components/ui/sidebar';
 const MainLayout: React.FC = () => {
-  const { currentProject } = useProject();
-  const { agents } = currentProject;
+  const {
+    currentProject
+  } = useProject();
+  const {
+    agents
+  } = currentProject;
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const { open, toggleSidebar } = useSidebar();
+  const {
+    open,
+    toggleSidebar
+  } = useSidebar();
   const [showOutputDialog, setShowOutputDialog] = useState(false);
 
   // Custom sidebar width variables - DOUBLED the width
@@ -62,9 +45,7 @@ const MainLayout: React.FC = () => {
   React.useEffect(() => {
     document.documentElement.classList.add(theme);
   }, []);
-
-  return (
-    <div className="min-h-screen flex flex-col w-full">
+  return <div className="min-h-screen flex flex-col w-full">
       {/* Background mesh gradients */}
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_top_right,rgba(127,90,240,0.15),transparent_50%)] pointer-events-none" />
       <div className="fixed inset-0 -z-10 bg-[radial-gradient(at_bottom_left,rgba(0,178,255,0.08),transparent_50%)] pointer-events-none" />
@@ -80,8 +61,12 @@ const MainLayout: React.FC = () => {
               <div className="bg-mesh-background rounded-sm p-1.5">
                 <div className="flex items-center space-x-1">
                   <div className="w-2 h-2 rounded-full bg-mesh-purple animate-pulse" />
-                  <div className="w-2 h-2 rounded-full bg-mesh-blue animate-pulse" style={{ animationDelay: '0.2s' }} />
-                  <div className="w-2 h-2 rounded-full bg-mesh-green animate-pulse" style={{ animationDelay: '0.4s' }} />
+                  <div className="w-2 h-2 rounded-full bg-mesh-blue animate-pulse" style={{
+                  animationDelay: '0.2s'
+                }} />
+                  <div className="w-2 h-2 rounded-full bg-mesh-green animate-pulse" style={{
+                  animationDelay: '0.4s'
+                }} />
                 </div>
               </div>
             </div>
@@ -93,22 +78,12 @@ const MainLayout: React.FC = () => {
           </div>
           <div className="flex items-center gap-2">
             {/* Left Sidebar Toggle (Visible on all screens) */}
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full h-8 w-8 transition-all hover:shadow-glow flex"
-              onClick={toggleSidebar}
-            >
+            <Button variant="outline" size="icon" className="rounded-full h-8 w-8 transition-all hover:shadow-glow flex" onClick={toggleSidebar}>
               {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
 
             {/* Final Output Dialog Trigger */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="transition-all hover:shadow-glow"
-              onClick={() => setShowOutputDialog(true)}
-            >
+            <Button variant="outline" size="sm" className="transition-all hover:shadow-glow" onClick={() => setShowOutputDialog(true)}>
               <FileText className="h-4 w-4 mr-2" />
               View Output
             </Button>
@@ -175,14 +150,12 @@ const MainLayout: React.FC = () => {
       {/* Main Content with Sidebar */}
       <div className="flex flex-1 overflow-hidden">
         {/* Left Sidebar (Collapsible) with custom width */}
-        <Sidebar collapsible="icon" 
-          style={{ 
-            '--sidebar-width': sidebarWidth, 
-            '--sidebar-width-icon': sidebarWidthIcon,
-            '--sidebar-width-mobile': sidebarWidthMobile 
-          } as React.CSSProperties}
-        >
-          <SidebarRail />
+        <Sidebar collapsible="icon" style={{
+        '--sidebar-width': sidebarWidth,
+        '--sidebar-width-icon': sidebarWidthIcon,
+        '--sidebar-width-mobile': sidebarWidthMobile
+      } as React.CSSProperties}>
+          <SidebarRail className="px-0 mx-0" />
           <SidebarHeader className="flex items-center">
             <div className="text-lg font-medium gradient-text px-2">Configure</div>
           </SidebarHeader>
@@ -214,12 +187,7 @@ const MainLayout: React.FC = () => {
                   </EnhancedTooltip>
                 </div>
                 <div className="space-y-4">
-                  {agents.length > 0 ? (
-                    agents.map((agent) => (
-                      <AgentCard key={agent.id} agent={agent} />
-                    ))
-                  ) : (
-                    <Card className="border-dashed border-white/10 bg-card/50 backdrop-blur-sm">
+                  {agents.length > 0 ? agents.map(agent => <AgentCard key={agent.id} agent={agent} />) : <Card className="border-dashed border-white/10 bg-card/50 backdrop-blur-sm">
                       <CardContent className="p-6 flex flex-col items-center justify-center text-center">
                         <div className="rounded-full bg-mesh-purple/20 p-3 mb-4">
                           <Sparkles className="h-6 w-6 text-mesh-purple" />
@@ -230,8 +198,7 @@ const MainLayout: React.FC = () => {
                         </p>
                         <AddAgentButton />
                       </CardContent>
-                    </Card>
-                  )}
+                    </Card>}
                 </div>
               </div>
             </div>
@@ -254,12 +221,7 @@ const MainLayout: React.FC = () => {
                       AI agents working together on your prompt
                     </CardDescription>
                   </div>
-                  <Button 
-                    variant="outline" 
-                    size="icon" 
-                    className="rounded-full h-8 w-8 md:hidden"
-                    onClick={toggleSidebar}
-                  >
+                  <Button variant="outline" size="icon" className="rounded-full h-8 w-8 md:hidden" onClick={toggleSidebar}>
                     {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
                 </div>
@@ -316,8 +278,6 @@ const MainLayout: React.FC = () => {
           </div>
         </div>
       </footer>
-    </div>
-  );
+    </div>;
 };
-
 export default MainLayout;

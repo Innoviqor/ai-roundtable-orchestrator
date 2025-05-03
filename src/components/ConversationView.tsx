@@ -1,27 +1,33 @@
-
 import React, { useEffect, useRef, useState } from 'react';
 import { useProject } from '@/contexts/ProjectContext';
 import { Message, exampleAgents, exampleMessages } from '@/types';
 import { formatTimestamp, generateId, getAgentColorByPlatform, getAgentInitial } from '@/utils/helpers';
 import { callAgent } from '@/utils/mockAgentHandlers';
 import { toast } from 'sonner';
-
 import { Card } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { AlertCircle, ArrowDownToLine, Crown, ExternalLink, Loader2 } from 'lucide-react';
 import { EnhancedTooltip } from './ui/enhanced-tooltip';
 import { Button } from './ui/button';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from './ui/dialog';
-
 const ConversationView: React.FC = () => {
-  const { currentProject, addMessage, updateMessage, isRunning, setIsRunning, updateProject } = useProject();
+  const {
+    currentProject,
+    addMessage,
+    updateMessage,
+    isRunning,
+    setIsRunning,
+    updateProject
+  } = useProject();
   const [thinking, setThinking] = useState<string | null>(null);
   const [showingExample, setShowingExample] = useState(false);
   const endOfMessagesRef = useRef<HTMLDivElement>(null);
 
   // Scroll to bottom when messages change
   useEffect(() => {
-    endOfMessagesRef.current?.scrollIntoView({ behavior: 'smooth' });
+    endOfMessagesRef.current?.scrollIntoView({
+      behavior: 'smooth'
+    });
   }, [currentProject.messages, thinking]);
 
   // Trigger response to the last message if it's from an agent
@@ -30,7 +36,7 @@ const ConversationView: React.FC = () => {
     if (isRunning && !thinking && currentProject.messages.length > 0) {
       const lastMessage = currentProject.messages[currentProject.messages.length - 1];
       const lastAgent = currentProject.agents.find(a => a.id === lastMessage.agentId);
-      
+
       // Don't respond if this is a user message or if we've reached the conversation limit
       if (lastAgent && currentProject.conversationRounds < currentProject.maxConversationRounds) {
         triggerNextAgentResponse(lastMessage);
@@ -42,40 +48,31 @@ const ConversationView: React.FC = () => {
   useEffect(() => {
     const handleRunConversation = async (event: CustomEvent) => {
       if (event.detail.projectId !== currentProject.id) return;
-      
-      const { agents, prompt, conversationMode } = currentProject;
-      
+      const {
+        agents,
+        prompt,
+        conversationMode
+      } = currentProject;
+
       // Check if there's a leader agent
       const leaderAgent = agents.find(agent => agent.isLeader);
-      
       if (leaderAgent) {
         // Leader-directed conversation
         setThinking(leaderAgent.id);
-        
         try {
           // Get leader's directives first
-          const leaderDirective = await callAgent(
-            leaderAgent, 
-            `You are the leader. Based on this request: "${prompt}", provide clear instructions for each team member to follow. Your goal is to coordinate the team's effort.`, 
-            []
-          );
-          
+          const leaderDirective = await callAgent(leaderAgent, `You are the leader. Based on this request: "${prompt}", provide clear instructions for each team member to follow. Your goal is to coordinate the team's effort.`, []);
           addMessage(leaderDirective);
-          
+
           // Now process other agents sequentially with leader's guidance
           for (const agent of agents.filter(a => a.id !== leaderAgent.id)) {
             if (!isRunning) break; // Check if we should stop
-            
+
             setThinking(agent.id);
-            
             try {
               // Include the leader's directive in the context
-              const message = await callAgent(
-                agent, 
-                prompt,
-                [...currentProject.messages, leaderDirective] // Include leader's directive
+              const message = await callAgent(agent, prompt, [...currentProject.messages, leaderDirective] // Include leader's directive
               );
-              
               addMessage(message);
             } catch (error) {
               console.error(`Error with agent ${agent.name}:`, error);
@@ -92,10 +89,9 @@ const ConversationView: React.FC = () => {
         // Traditional sequential mode (no leader)
         for (let i = 0; i < agents.length; i++) {
           if (!isRunning) break; // Check if we should stop
-          
+
           const agent = agents[i];
           setThinking(agent.id);
-          
           try {
             // Call the agent and get a response
             const message = await callAgent(agent, prompt, currentProject.messages);
@@ -110,12 +106,8 @@ const ConversationView: React.FC = () => {
       } else {
         // Simultaneous mode (no leader)
         setThinking('all');
-        
         try {
-          const messagePromises = agents.map(agent => 
-            callAgent(agent, prompt, currentProject.messages)
-          );
-          
+          const messagePromises = agents.map(agent => callAgent(agent, prompt, currentProject.messages));
           const messages = await Promise.all(messagePromises);
           messages.forEach(message => addMessage(message));
         } catch (error) {
@@ -126,7 +118,6 @@ const ConversationView: React.FC = () => {
         }
       }
     };
-
     const handleStopConversation = () => {
       setThinking(null);
     };
@@ -144,16 +135,18 @@ const ConversationView: React.FC = () => {
 
   // Function to trigger the next agent response in the conversation
   const triggerNextAgentResponse = async (lastMessage: Message) => {
-    const { agents } = currentProject;
+    const {
+      agents
+    } = currentProject;
     if (agents.length <= 1) return; // Need at least 2 agents to have a conversation
-    
+
     // Find the agent that sent the last message
     const lastAgentIndex = agents.findIndex(agent => agent.id === lastMessage.agentId);
-    
+
     // Determine the next agent (circular)
     const nextAgentIndex = (lastAgentIndex + 1) % agents.length;
     const nextAgent = agents[nextAgentIndex];
-    
+
     // Skip if this is the leader agent and we already had the leader directive
     if (nextAgent.isLeader && currentProject.messages.some(m => m.agentId === nextAgent.id)) {
       // Try the next agent instead
@@ -164,34 +157,24 @@ const ConversationView: React.FC = () => {
       }
       return;
     }
-    
     await generateAgentResponse(nextAgent, lastMessage);
   };
-  
+
   // Generate a response from a specific agent
   const generateAgentResponse = async (agent: any, lastMessage: Message) => {
     if (!isRunning) return;
-    
     setThinking(agent.id);
-    
     try {
       // Increment the conversation round counter
       updateProject({
         conversationRounds: (currentProject.conversationRounds || 0) + 1
       });
-      
+
       // Prompt for the agent to respond to the previous message
-      const responsePrompt = `Respond to this message from ${
-        currentProject.agents.find(a => a.id === lastMessage.agentId)?.name || 'another agent'
-      }: "${lastMessage.content}"`;
-      
+      const responsePrompt = `Respond to this message from ${currentProject.agents.find(a => a.id === lastMessage.agentId)?.name || 'another agent'}: "${lastMessage.content}"`;
+
       // Call the agent with the appropriate context
-      const message = await callAgent(
-        agent,
-        responsePrompt,
-        currentProject.messages
-      );
-      
+      const message = await callAgent(agent, responsePrompt, currentProject.messages);
       addMessage(message);
     } catch (error) {
       console.error(`Error getting response from ${agent.name}:`, error);
@@ -201,25 +184,22 @@ const ConversationView: React.FC = () => {
       setThinking(null);
     }
   };
-
   const loadExampleMessages = () => {
     setShowingExample(true);
   };
-
   const loadExampleProject = () => {
     // Update the current project with example data
     updateProject({
       prompt: "Make me a 1-page site that introduces a song I created and includes a play button for the audio.",
-      agents: JSON.parse(JSON.stringify(exampleAgents)), // Deep copy to avoid reference issues
-      messages: JSON.parse(JSON.stringify(exampleMessages)), // Deep copy to avoid reference issues
+      agents: JSON.parse(JSON.stringify(exampleAgents)),
+      // Deep copy to avoid reference issues
+      messages: JSON.parse(JSON.stringify(exampleMessages)) // Deep copy to avoid reference issues
     });
     toast.success("Loaded example project");
     setShowingExample(false);
   };
-
   if (currentProject.messages.length === 0 && !thinking) {
-    return (
-      <div className="h-full flex flex-col items-center justify-center text-center p-8">
+    return <div className="h-full flex flex-col items-center justify-center text-center p-8">
         <div className="rounded-full bg-mesh-purple/20 p-3 mb-4">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-mesh-purple">
             <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
@@ -232,11 +212,7 @@ const ConversationView: React.FC = () => {
         
         <Dialog>
           <DialogTrigger asChild>
-            <Button 
-              variant="outline" 
-              className="flex items-center gap-2 bg-background/30 hover:bg-background/50 backdrop-blur"
-              onClick={loadExampleMessages}
-            >
+            <Button variant="outline" className="flex items-center gap-2 bg-background/30 hover:bg-background/50 backdrop-blur" onClick={loadExampleMessages}>
               <ExternalLink size={16} />
               <span>View Example Conversation</span>
             </Button>
@@ -250,31 +226,23 @@ const ConversationView: React.FC = () => {
             </DialogHeader>
             
             <div className="space-y-4 my-4">
-              {exampleMessages.map((message) => {
-                const agent = message.agentId === 'user' 
-                  ? { name: 'User', role: 'Prompt' } 
-                  : exampleAgents.find(a => a.id === message.agentId);
-                
-                if (!agent) return null;
-                
-                const avatarColor = message.agentId === 'user' 
-                  ? 'bg-gradient-to-r from-blue-500 to-blue-700' 
-                  : getAgentColorByPlatform(exampleAgents.find(a => a.id === message.agentId)?.platform || 'Other');
-                
-                const isLeader = message.agentId !== 'user' && exampleAgents.find(a => a.id === message.agentId)?.isLeader;
-                
-                return (
-                  <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
+              {exampleMessages.map(message => {
+              const agent = message.agentId === 'user' ? {
+                name: 'User',
+                role: 'Prompt'
+              } : exampleAgents.find(a => a.id === message.agentId);
+              if (!agent) return null;
+              const avatarColor = message.agentId === 'user' ? 'bg-gradient-to-r from-blue-500 to-blue-700' : getAgentColorByPlatform(exampleAgents.find(a => a.id === message.agentId)?.platform || 'Other');
+              const isLeader = message.agentId !== 'user' && exampleAgents.find(a => a.id === message.agentId)?.isLeader;
+              return <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
                     <div className="flex items-start space-x-3">
                       <div className="flex flex-col items-center">
                         <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
                           {message.agentId === 'user' ? 'U' : getAgentInitial(agent.name)}
                         </div>
-                        {isLeader && (
-                          <EnhancedTooltip content="This agent is leading the conversation">
+                        {isLeader && <EnhancedTooltip content="This agent is leading the conversation">
                             <Crown size={14} className="text-amber-400 mt-1" />
-                          </EnhancedTooltip>
-                        )}
+                          </EnhancedTooltip>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
@@ -291,9 +259,8 @@ const ConversationView: React.FC = () => {
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              })}
+                  </div>;
+            })}
             </div>
             
             <div className="flex justify-end mt-4">
@@ -304,31 +271,23 @@ const ConversationView: React.FC = () => {
             </div>
           </DialogContent>
         </Dialog>
-      </div>
-    );
+      </div>;
   }
-
-  return (
-    <div className="h-full flex flex-col overflow-y-auto scrollbar-thin">
-      <div className="flex-1 p-4 space-y-4">
-        {currentProject.messages.map((message) => {
-          const agent = currentProject.agents.find(a => a.id === message.agentId);
-          if (!agent) return null;
-          
-          const avatarColor = getAgentColorByPlatform(agent.platform);
-          
-          return (
-            <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
+  return <div className="h-full flex flex-col overflow-y-auto scrollbar-thin">
+      <div className="flex-1 p-4 space-y-4 px-[240px]">
+        {currentProject.messages.map(message => {
+        const agent = currentProject.agents.find(a => a.id === message.agentId);
+        if (!agent) return null;
+        const avatarColor = getAgentColorByPlatform(agent.platform);
+        return <div key={message.id} className="flex flex-col space-y-2 animate-fade-in">
               <div className="flex items-start space-x-3">
                 <div className="flex flex-col items-center">
                   <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
                     {getAgentInitial(agent.name)}
                   </div>
-                  {agent.isLeader && (
-                    <EnhancedTooltip content="This agent is leading the conversation">
+                  {agent.isLeader && <EnhancedTooltip content="This agent is leading the conversation">
                       <Crown size={14} className="text-amber-400 mt-1" />
-                    </EnhancedTooltip>
-                  )}
+                    </EnhancedTooltip>}
                 </div>
                 <div className="flex-1">
                   <div className="flex items-center space-x-2">
@@ -345,35 +304,25 @@ const ConversationView: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </div>
-          );
-        })}
+            </div>;
+      })}
 
-        {thinking && (
-          <div className="flex flex-col space-y-2 animate-fade-in">
-            {thinking === 'all' ? (
-              <div className="flex items-center space-x-2 text-sm text-mesh-textSecondary">
+        {thinking && <div className="flex flex-col space-y-2 animate-fade-in">
+            {thinking === 'all' ? <div className="flex items-center space-x-2 text-sm text-mesh-textSecondary">
                 <Loader2 className="animate-spin h-4 w-4" />
                 <span>Multiple agents are thinking...</span>
-              </div>
-            ) : (
-              <>
+              </div> : <>
                 {currentProject.agents.map(agent => {
-                  if (agent.id !== thinking) return null;
-                  
-                  const avatarColor = getAgentColorByPlatform(agent.platform);
-                  
-                  return (
-                    <div key={agent.id} className="flex items-start space-x-3">
+            if (agent.id !== thinking) return null;
+            const avatarColor = getAgentColorByPlatform(agent.platform);
+            return <div key={agent.id} className="flex items-start space-x-3">
                       <div className="flex flex-col items-center">
                         <div className={`${avatarColor} w-8 h-8 rounded-full flex items-center justify-center text-white font-medium mt-1 shadow-md`}>
                           {getAgentInitial(agent.name)}
                         </div>
-                        {agent.isLeader && (
-                          <EnhancedTooltip content="This agent is leading the conversation">
+                        {agent.isLeader && <EnhancedTooltip content="This agent is leading the conversation">
                             <Crown size={14} className="text-amber-400 mt-1" />
-                          </EnhancedTooltip>
-                        )}
+                          </EnhancedTooltip>}
                       </div>
                       <div className="flex-1">
                         <div className="flex items-center space-x-2">
@@ -383,24 +332,23 @@ const ConversationView: React.FC = () => {
                         <div className="mt-1 text-sm flex items-center space-x-2 text-mesh-textSecondary bg-black/20 p-3 rounded-lg border border-white/5">
                           <div className="flex space-x-1 items-center">
                             <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking"></div>
-                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{ animationDelay: '0.2s' }}></div>
-                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{ animationDelay: '0.4s' }}></div>
+                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{
+                      animationDelay: '0.2s'
+                    }}></div>
+                            <div className="w-2 h-2 rounded-full bg-mesh-purple animate-thinking" style={{
+                      animationDelay: '0.4s'
+                    }}></div>
                           </div>
                           <span>Thinking...</span>
                         </div>
                       </div>
-                    </div>
-                  );
-                })}
-              </>
-            )}
-          </div>
-        )}
+                    </div>;
+          })}
+              </>}
+          </div>}
 
         <div ref={endOfMessagesRef} />
       </div>
-    </div>
-  );
+    </div>;
 };
-
 export default ConversationView;
