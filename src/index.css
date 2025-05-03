@@ -42,7 +42,7 @@
     --sidebar-border: 240 3.7% 15.9%;
     --sidebar-ring: 240 4.9% 83.9%;
     
-    --radius: 0.5rem;
+    --radius: 0.75rem;
   }
 
   .light {
@@ -105,7 +105,7 @@
 
 @layer components {
   .mesh-card {
-    @apply bg-mesh-card border border-white/10 rounded-lg shadow-md backdrop-blur-sm;
+    @apply bg-mesh-card border border-white/10 rounded-xl shadow-md backdrop-blur-sm;
     background-image: linear-gradient(to bottom right, rgba(127, 90, 240, 0.1), transparent);
   }
   
@@ -127,6 +127,10 @@
   
   .gradient-text {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-mesh-purple to-mesh-blue animate-gradient-flow;
+  }
+  
+  .message-bubble {
+    @apply p-4 rounded-xl border border-white/5 backdrop-blur-sm shadow-md transition-all duration-200;
   }
 }
 
@@ -158,6 +162,14 @@
   
   .text-shadow {
     text-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  }
+  
+  .hover-scale {
+    @apply transition-transform duration-200;
+  }
+  
+  .hover-scale:hover {
+    transform: scale(1.02);
   }
 }
 
@@ -229,4 +241,14 @@
 /* Leader indicator styles */
 .leader-crown {
   @apply text-yellow-400 drop-shadow-md;
+}
+
+/* Thinking animation */
+@keyframes thinking {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 1; }
+}
+
+.animate-thinking {
+  animation: thinking 1.5s infinite ease-in-out;
 }
