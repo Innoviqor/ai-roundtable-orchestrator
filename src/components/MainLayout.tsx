@@ -14,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Button } from '@/components/ui/button';
 import { Drawer, DrawerContent, DrawerTrigger } from '@/components/ui/drawer';
+import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { 
   Github, 
   Info, 
@@ -23,9 +24,9 @@ import {
   Sun, 
   MenuIcon,
   PanelLeftIcon,
-  PanelRightIcon,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  FileText
 } from 'lucide-react';
 import {
   Sidebar,
@@ -42,8 +43,8 @@ const MainLayout: React.FC = () => {
   const { currentProject } = useProject();
   const { agents } = currentProject;
   const [theme, setTheme] = useState<'dark' | 'light'>('dark');
-  const [rightPanelOpen, setRightPanelOpen] = useState(true);
   const { open, toggleSidebar } = useSidebar();
+  const [showOutputDialog, setShowOutputDialog] = useState(false);
 
   const toggleTheme = () => {
     const newTheme = theme === 'dark' ? 'light' : 'dark';
@@ -95,15 +96,16 @@ const MainLayout: React.FC = () => {
             >
               {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
             </Button>
-            
-            {/* Right Panel Toggle (Medium+ screens) */}
-            <Button 
-              variant="outline" 
-              size="icon" 
-              className="rounded-full h-8 w-8 transition-all hover:shadow-glow hidden md:flex"
-              onClick={() => setRightPanelOpen(!rightPanelOpen)}
+
+            {/* Final Output Dialog Trigger */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="transition-all hover:shadow-glow"
+              onClick={() => setShowOutputDialog(true)}
             >
-              {rightPanelOpen ? <PanelRightIcon className="h-4 w-4" /> : <PanelLeftIcon className="h-4 w-4" />}
+              <FileText className="h-4 w-4 mr-2" />
+              View Output
             </Button>
             
             <EnhancedTooltip content={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}>
@@ -230,64 +232,59 @@ const MainLayout: React.FC = () => {
 
         {/* Main Content */}
         <SidebarInset className="flex-grow">
-          {/* Right panel that can be toggled */}
-          <div className="h-full flex flex-col md:flex-row">
-            {/* Conversation View (Full width on mobile, left panel on desktop when right panel is open) */}
-            <div className={`flex-grow ${rightPanelOpen ? 'md:w-1/2' : 'w-full'} h-full md:h-[calc(100vh-4rem)]`}>
-              <Card className="h-full overflow-hidden mesh-card">
-                <CardHeader className="p-4 border-b border-white/10">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <CardTitle className="gradient-text">Conversation</CardTitle>
-                      <CardDescription>
-                        AI agents working together on your prompt
-                      </CardDescription>
-                    </div>
-                    <Button 
-                      variant="outline" 
-                      size="icon" 
-                      className="rounded-full h-8 w-8 md:hidden"
-                      onClick={toggleSidebar}
-                    >
-                      {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                    </Button>
+          {/* Conversation View (Full width) */}
+          <div className="h-full">
+            <Card className="h-full overflow-hidden mesh-card">
+              <CardHeader className="p-4 border-b border-white/10">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="gradient-text">Conversation</CardTitle>
+                    <CardDescription>
+                      AI agents working together on your prompt
+                    </CardDescription>
                   </div>
-                </CardHeader>
-                <ScrollArea className="h-[calc(100vh-12rem)] md:h-[calc(100vh-14rem)]">
-                  <ConversationView />
-                </ScrollArea>
-              </Card>
-            </div>
-
-            {/* Output Panel (Hidden on mobile, shown/hidden on desktop) */}
-            {rightPanelOpen && (
-              <div className="hidden md:block md:w-1/2 h-[calc(100vh-4rem)] pl-4">
-                <Card className="h-full overflow-hidden mesh-card">
-                  <FinalOutputPanel />
-                </Card>
-              </div>
-            )}
-            
-            {/* Mobile-only bottom drawer for output */}
-            <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
-              <Drawer>
-                <DrawerTrigger asChild>
-                  <Button variant="outline" className="w-full rounded-b-none rounded-t-md border-b-0 bg-black/50 backdrop-blur-sm py-2">
-                    <span>View Final Output</span>
+                  <Button 
+                    variant="outline" 
+                    size="icon" 
+                    className="rounded-full h-8 w-8 md:hidden"
+                    onClick={toggleSidebar}
+                  >
+                    {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
                   </Button>
-                </DrawerTrigger>
-                <DrawerContent className="max-h-[80vh]">
-                  <div className="p-4">
-                    <h3 className="font-medium text-lg mb-4">Final Output</h3>
-                    <div className="max-h-[60vh] overflow-y-auto">
-                      <FinalOutputPanel />
-                    </div>
-                  </div>
-                </DrawerContent>
-              </Drawer>
-            </div>
+                </div>
+              </CardHeader>
+              <ScrollArea className="h-[calc(100vh-12rem)] md:h-[calc(100vh-14rem)]">
+                <ConversationView />
+              </ScrollArea>
+            </Card>
           </div>
         </SidebarInset>
+      </div>
+
+      {/* Final Output Dialog */}
+      <Dialog open={showOutputDialog} onOpenChange={setShowOutputDialog}>
+        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+          <FinalOutputPanel />
+        </DialogContent>
+      </Dialog>
+
+      {/* Mobile-only bottom button for output */}
+      <div className="md:hidden fixed bottom-0 left-0 right-0 z-10">
+        <Drawer>
+          <DrawerTrigger asChild>
+            <Button variant="outline" className="w-full rounded-b-none rounded-t-md border-b-0 bg-black/50 backdrop-blur-sm py-2">
+              <span>View Final Output</span>
+            </Button>
+          </DrawerTrigger>
+          <DrawerContent className="max-h-[80vh]">
+            <div className="p-4">
+              <h3 className="font-medium text-lg mb-4">Final Output</h3>
+              <div className="max-h-[60vh] overflow-y-auto">
+                <FinalOutputPanel />
+              </div>
+            </div>
+          </DrawerContent>
+        </Drawer>
       </div>
 
       {/* Footer - Hidden on mobile to save space */}
