@@ -14,7 +14,7 @@ export const callAgent = async (
     // Check if we should use real API or mock
     const shouldUseMockResponse = 
       !agent.apiKey && agent.platform !== 'Local' || 
-      process.env.NODE_ENV === 'development' && process.env.REACT_APP_USE_MOCK_AI === 'true';
+      (import.meta.env.DEV && import.meta.env.VITE_USE_MOCK_AI === 'true');
     
     if (shouldUseMockResponse) {
       // Use mock response if no API key provided or explicitly in mock mode
