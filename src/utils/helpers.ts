@@ -13,14 +13,32 @@ export function getAgentColorByPlatform(platform: AIPlatform): string {
       return 'bg-gradient-to-r from-purple-500 to-purple-700';
     case 'Google':
       return 'bg-gradient-to-r from-blue-500 to-blue-700';
+    case 'Grok':
+      return 'bg-gradient-to-r from-red-500 to-orange-700';
+    case 'Perplexity':
+      return 'bg-gradient-to-r from-cyan-500 to-blue-600';
+    case 'Together':
+      return 'bg-gradient-to-r from-amber-500 to-orange-600';
+    case 'Groq':
+      return 'bg-gradient-to-r from-pink-500 to-rose-600';
+    case 'Cohere':
+      return 'bg-gradient-to-r from-indigo-500 to-violet-600';
+    case 'Mistral':
+      return 'bg-gradient-to-r from-orange-500 to-yellow-600';
+    case 'Replicate':
+      return 'bg-gradient-to-r from-lime-500 to-green-600';
+    case 'Bedrock':
+      return 'bg-gradient-to-r from-yellow-500 to-orange-600';
+    case 'Meta':
+      return 'bg-gradient-to-r from-blue-600 to-indigo-700';
+    case 'Canva':
+      return 'bg-gradient-to-r from-blue-400 to-cyan-500';
+    case 'Suno':
+      return 'bg-gradient-to-r from-green-500 to-emerald-600';
     case 'Lovable':
       return 'bg-gradient-to-r from-rose-500 to-rose-700';
     case 'Local':
       return 'bg-gradient-to-r from-slate-500 to-slate-700';
-    case 'Meta':
-      return 'bg-gradient-to-r from-blue-500 to-indigo-500';
-    case 'Canva':
-      return 'bg-gradient-to-r from-blue-400 to-cyan-500';
     case 'Other':
     default:
       return 'bg-gradient-to-r from-gray-500 to-gray-700';

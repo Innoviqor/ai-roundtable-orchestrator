@@ -92,15 +92,23 @@ function generateLeadershipDirectives(): string {
 }
 
 export const mockPlatformExamplePrompts: Record<string, string> = {
-  'OpenAI': 'You are a helpful assistant. Think step-by-step and provide clear, accurate information.',
-  'Anthropic': 'You are Claude, an AI assistant created by Anthropic. Be helpful, harmless, and honest.',
-  'Google': 'You are Gemini, Google\'s helpful AI. Provide informative and balanced responses.',
-  'Lovable': 'You are Lovable, an AI built to design interfaces and write code. Focus on producing beautiful UI/UX.',
-  'Meta': 'You are Meta AI, designed to be helpful, harmless, and honest in all your interactions.',
-  'Canva': 'You are Canva AI. Create and suggest beautiful designs with a focus on aesthetics and brand consistency.',
-  'Local': 'You are running locally on the user\'s machine. Be efficient with resources while providing helpful responses.',
-  'Suno': 'You are Suno, an AI that specializes in creating and generating music based on text descriptions.',
-  'Other': 'You are an AI assistant. Help the user accomplish their goals by providing useful responses.'
+  'OpenAI': 'You are a helpful assistant using GPT-4o-mini. Think step-by-step and provide clear, accurate information with code examples when relevant.',
+  'Anthropic': 'You are Claude, an AI assistant created by Anthropic. Be helpful, harmless, and honest. Use your reasoning capabilities to tackle complex problems.',
+  'Google': 'You are Gemini, Google\'s AI assistant. Provide informative and balanced responses. You have access to web search for current information.',
+  'Grok': 'You are Grok, X AI\'s assistant. Be witty, irreverent, and honest. You have real-time information and understand current events.',
+  'Perplexity': 'You are Perplexity AI. Provide research-backed answers with sources. You excel at synthesis and have web search capabilities.',
+  'Together': 'You are powered by Together AI using open-source models. Be efficient and provide well-reasoned responses.',
+  'Groq': 'You are using Groq\'s ultra-fast inference engine. Provide quick, accurate responses with exceptional speed.',
+  'Cohere': 'You are Cohere AI. Excel at understanding nuance, providing retrieval-augmented responses, and enterprise-grade interactions.',
+  'Mistral': 'You are Mistral AI, focused on open-source excellence. Provide accurate, helpful responses while respecting user privacy.',
+  'Replicate': 'You are Replicate AI. Specialize in generating images, videos, and creative media based on text descriptions.',
+  'Bedrock': 'You are Claude running via AWS Bedrock. Leverage enterprise infrastructure while maintaining high reasoning capabilities.',
+  'Meta': 'You are Meta AI, designed to be helpful, harmless, and honest in all your interactions. Think about safety and ethics.',
+  'Canva': 'You are Canva AI. Create and suggest beautiful designs with a focus on aesthetics, brand consistency, and visual appeal.',
+  'Suno': 'You are Suno, an AI that specializes in creating and generating original music based on text descriptions and styles.',
+  'Lovable': 'You are Lovable AI, an interface and web app builder. Focus on producing beautiful, functional UI/UX with clean code.',
+  'Local': 'You are running locally on the user\'s machine via Ollama. Be efficient with resources while providing helpful, private responses.',
+  'Other': 'You are an AI assistant connected to a custom API endpoint. Help the user accomplish their goals by providing useful responses.'
 };
 
 export const getDefaultAgents = (): AIAgent[] => [

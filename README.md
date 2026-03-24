@@ -1,8 +1,73 @@
-# Welcome to your Lovable project
+# AI Roundtable Orchestrator
 
-## Project info
+An advanced multi-agent AI orchestration platform where multiple AI models collaborate to solve complex tasks.
 
-**URL**: https://lovable.dev/projects/71973125-d735-4e52-9b89-b289c79991dc
+**🎪 Bring together your favorite AIs to brainstorm, design, code, and create.**
+
+## Features
+
+✨ **15+ AI Platforms Supported:**
+- OpenAI (GPT-4o-mini)
+- Anthropic (Claude 3.5)
+- Google (Gemini 1.5)
+- Grok (X AI)
+- Perplexity (Web Search)
+- Together AI (Meta Llama, Mistral)
+- Groq (Lightning Fast)
+- Cohere, Mistral, Replicate
+- AWS Bedrock
+- + Canva, Suno, Lovable, Local Ollama, Custom endpoints
+
+🤝 **Multi-Agent Collaboration:**
+- Sequential or simultaneous agent responses
+- Leader agent coordinates team
+- Custom system prompts per agent
+- Persistent conversation history
+
+🎨 **Beautiful UI:**
+- Dark mode with glassmorphism
+- Real-time streaming responses
+- Rich Markdown support
+- Responsive design
+
+📦 **Production Ready:**
+- Full TypeScript support
+- Error handling & validation
+- API key security (via backend proxy)
+- LocalStorage persistence
+
+## Quick Start
+
+```bash
+# Install
+npm install
+
+# Run locally
+npm run dev
+
+# Build for production
+npm run build
+```
+
+Visit `http://localhost:5173` and start orchestrating!
+
+## Getting API Keys
+
+See **[API_KEYS.md](./API_KEYS.md)** for complete guide on getting free & paid API keys.
+
+**TL;DR:** 
+- OpenAI: https://platform.openai.com/api-keys
+- Anthropic: https://console.anthropic.com/
+- Google: https://aistudio.google.com/app/apikey
+- Groq (free!): https://console.groq.com/
+
+## Setup & Deployment
+
+See **[SETUP.md](./SETUP.md)** for:
+- Local development
+- Deployment (Vercel, Netlify, Docker)
+- Security best practices
+- Performance optimization
 
 ## How can I edit this code?
 

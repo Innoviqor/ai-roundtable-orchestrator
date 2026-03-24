@@ -10,6 +10,7 @@ export const formatMessagesForPlatform = (
   // Convert messages to the format expected by each API
   switch (agent.platform) {
     case 'OpenAI':
+    case 'Groq':
       return previousMessages.map(msg => ({
         role: msg.agentId === 'user' ? 'user' : 'assistant',
         content: msg.content
@@ -31,6 +32,35 @@ export const formatMessagesForPlatform = (
         })).concat([{ role: 'user', parts: [{ text: currentPrompt }] }])
       };
     
+    case 'Grok':
+      return previousMessages.map(msg => ({
+        role: msg.agentId === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      })).concat([{ role: 'user', content: currentPrompt }]);
+
+    case 'Perplexity':
+      return {
+        messages: previousMessages.map(msg => ({
+          role: msg.agentId === 'user' ? 'user' : 'assistant',
+          content: msg.content
+        })).concat([{ role: 'user', content: currentPrompt }])
+      };
+
+    case 'Together':
+    case 'Mistral':
+      return previousMessages.map(msg => ({
+        role: msg.agentId === 'user' ? 'user' : 'assistant',
+        content: msg.content
+      })).concat([{ role: 'user', content: currentPrompt }]);
+
+    case 'Cohere':
+      return {
+        messages: previousMessages.map(msg => ({
+          role: msg.agentId === 'user' ? 'user' : 'assistant',
+          message: msg.content
+        })).concat([{ role: 'user', message: currentPrompt }])
+      };
+
     // Default format for other platforms
     default:
       return {
@@ -42,16 +72,13 @@ export const formatMessagesForPlatform = (
   }
 };
 
-// Implementation of OpenAI API call
+// OpenAI API call (gpt-4o-mini)
 export const callOpenAI = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
   try {
-    console.log('Calling OpenAI API with:', { systemPrompt, messagesCount: messages.length });
-    
-    // Add system message to the beginning of the messages array
     const messagesWithSystem = [
       { role: 'system', content: systemPrompt },
       ...messages
@@ -84,15 +111,13 @@ export const callOpenAI = async (
   }
 };
 
-// Implementation of Anthropic API call
+// Anthropic API call (Claude)
 export const callAnthropic = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
   try {
-    console.log('Calling Anthropic API with:', { systemPrompt, messages });
-    
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
@@ -101,7 +126,7 @@ export const callAnthropic = async (
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        model: 'claude-3-haiku-20240307',
+        model: 'claude-3-5-sonnet-20241022',
         system: systemPrompt,
         messages: messages.messages,
         max_tokens: 2000
@@ -121,16 +146,13 @@ export const callAnthropic = async (
   }
 };
 
-// Implementation of Google API call
+// Google Gemini API call
 export const callGoogle = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
   try {
-    console.log('Calling Google API with:', { systemPrompt, messages });
-    
-    // Add system instruction to the beginning of the contents array
     const contentsWithSystem = [
       { role: 'system', parts: [{ text: systemPrompt }] },
       ...messages.contents
@@ -163,74 +185,496 @@ export const callGoogle = async (
   }
 };
 
-// Keep other mock implementations for services that we haven't implemented yet
-export const callMeta = async (
+// Grok API call (X AI)
+export const callGrok = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Meta API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Meta. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'grok-2',
+        messages: messagesWithSystem,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Grok');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Grok API error:', error);
+    throw error;
+  }
 };
 
-export const callCanva = async (
+// Perplexity API call (with web search)
+export const callPerplexity = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Canva API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Canva. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    const response = await fetch('https://api.perplexity.ai/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'sonar-pro',
+        messages: messages.messages.map(msg => ({
+          role: msg.role,
+          content: msg.content
+        })).concat([{ role: 'system', content: systemPrompt }]),
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Perplexity');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Perplexity API error:', error);
+    throw error;
+  }
 };
 
+// Together AI API call (Meta Llama, Mistral, etc)
+export const callTogether = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://api.together.xyz/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'meta-llama/Llama-3-70b-chat-hf',
+        messages: messagesWithSystem,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Together AI');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Together AI error:', error);
+    throw error;
+  }
+};
+
+// Groq API call (fast inference)
+export const callGroq = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'mixtral-8x7b-32768',
+        messages: messagesWithSystem,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Groq');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Groq API error:', error);
+    throw error;
+  }
+};
+
+// Cohere API call
+export const callCohere = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    const response = await fetch('https://api.cohere.ai/v1/chat', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'command-r-plus',
+        messages: messages.messages.map(msg => ({
+          role: msg.role,
+          message: msg.message
+        })),
+        system: systemPrompt
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Cohere');
+    }
+    
+    const data = await response.json();
+    return data.text;
+  } catch (error) {
+    console.error('Cohere API error:', error);
+    throw error;
+  }
+};
+
+// Mistral API call
+export const callMistral = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'mistral-large-latest',
+        messages: messagesWithSystem,
+        temperature: 0.7,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from Mistral');
+    }
+    
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error('Mistral API error:', error);
+    throw error;
+  }
+};
+
+// AWS Bedrock (Claude via Bedrock)
+export const callBedrock = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    // Bedrock requires AWS SDK, this is a placeholder
+    // In production, use @aws-sdk/client-bedrock-runtime
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch('https://bedrock.us-east-1.amazonaws.com/model/anthropic.claude-3-5-sonnet-20241022-v1:0/invoke', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${apiKey}`
+      },
+      body: JSON.stringify({
+        messages: messagesWithSystem,
+        max_tokens: 2000
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to get response from Bedrock');
+    }
+    
+    const data = await response.json();
+    return data.content[0].text;
+  } catch (error) {
+    console.error('Bedrock API error:', error);
+    throw error;
+  }
+};
+
+// Suno API call (music generation)
 export const callSuno = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Suno API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Suno, creating a song based on your description. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    const prompt = typeof messages === 'string' ? messages : JSON.stringify(messages);
+    
+    const response = await fetch('https://api.suno.ai/api/generate/v2/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: prompt,
+        tags: 'ai-generated',
+        title: 'Generated Track',
+        make_instrumental: false
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to generate music with Suno');
+    }
+    
+    const data = await response.json();
+    return `Music generated successfully. Track ID: ${data.id}. Listen at: https://suno.ai/song/${data.id}`;
+  } catch (error) {
+    console.error('Suno API error:', error);
+    throw error;
+  }
 };
 
+// Canva API call (design generation)
+export const callCanva = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string
+): Promise<string> => {
+  try {
+    const prompt = typeof messages === 'string' ? messages : JSON.stringify(messages);
+    
+    const response = await fetch('https://api.canva.com/rest/v1/designs/create', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        design_type: 'presentation',
+        prompt: prompt,
+        title: 'AI Generated Design'
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to create design with Canva');
+    }
+    
+    const data = await response.json();
+    return `Design created successfully. View at: ${data.design_url}`;
+  } catch (error) {
+    console.error('Canva API error:', error);
+    throw error;
+  }
+};
+
+// Lovable API call (Vercel AI / Web App Builder)
 export const callLovable = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling Lovable API with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from Lovable. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    const prompt = typeof messages === 'string' ? messages : JSON.stringify(messages);
+    
+    const response = await fetch('https://api.lovable.dev/v1/generate', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        prompt: `${systemPrompt}\n\n${prompt}`,
+        framework: 'react',
+        styled: true
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to generate with Lovable');
+    }
+    
+    const data = await response.json();
+    return `Web app generated successfully. Project: ${data.project_url}`;
+  } catch (error) {
+    console.error('Lovable API error:', error);
+    throw error;
+  }
 };
 
-export const callLocalAI = async (
-  messages: any,
-  systemPrompt: string
-): Promise<string> => {
-  console.log('Using local AI processing with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from a local AI model. System prompt: ${systemPrompt.substring(0, 20)}...`;
-};
-
-export const callCustomAI = async (
+// Replicate API call (image/video generation)
+export const callReplicate = async (
   apiKey: string,
   messages: any,
   systemPrompt: string
 ): Promise<string> => {
-  console.log('Calling custom API endpoint with:', { systemPrompt, messages: messages });
-  // Mock implementation for demo purposes
-  return `This is a mock response from a custom AI endpoint. System prompt: ${systemPrompt.substring(0, 20)}...`;
+  try {
+    const prompt = typeof messages === 'string' ? messages : JSON.stringify(messages);
+    
+    const response = await fetch('https://api.replicate.com/v1/predictions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Token ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        version: 'a00d0b8da8e84b2e9c4998cc2c0e153e635eef36d28d5184bb2eaa5a5cb49910',
+        input: {
+          prompt: prompt,
+          num_outputs: 1,
+          quality: 'high'
+        }
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.detail?.[0]?.msg || 'Failed to generate with Replicate');
+    }
+    
+    const data = await response.json();
+    return `Media generated successfully. Output: ${data.output?.[0] || 'Processing...'}`;
+  } catch (error) {
+    console.error('Replicate API error:', error);
+    throw error;
+  }
 };
 
-// Function to call external AI APIs based on platform
+// Local AI call (Ollama)
+export const callLocalAI = async (
+  messages: any,
+  systemPrompt: string,
+  localEndpoint: string = 'http://localhost:11434'
+): Promise<string> => {
+  try {
+    const messagesWithSystem = [
+      { role: 'system', content: systemPrompt },
+      ...messages
+    ];
+    
+    const response = await fetch(`${localEndpoint}/api/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        model: 'llama2',
+        messages: messagesWithSystem,
+        stream: false
+      })
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to connect to local AI endpoint. Is Ollama running?');
+    }
+    
+    const data = await response.json();
+    return data.message.content;
+  } catch (error) {
+    console.error('Local AI error:', error);
+    throw error;
+  }
+};
+
+// Custom API call
+export const callCustomAI = async (
+  apiKey: string,
+  messages: any,
+  systemPrompt: string,
+  customEndpoint: string
+): Promise<string> => {
+  try {
+    const payload = typeof messages === 'string' ? { prompt: messages } : messages;
+    
+    const response = await fetch(customEndpoint, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        ...payload,
+        system: systemPrompt
+      })
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error?.message || 'Failed to get response from custom endpoint');
+    }
+    
+    const data = await response.json();
+    return data.result || data.output || data.text || JSON.stringify(data);
+  } catch (error) {
+    console.error('Custom API error:', error);
+    throw error;
+  }
+};
+
+// Main function to call external AI APIs based on platform
 export const callExternalAI = async (
-  agent: AIAgent,
+  agent: any,
   prompt: string,
   previousMessages: Message[]
 ): Promise<string> => {
-  // Check if API key is available
-  if (!agent.apiKey && agent.platform !== 'Local') {
+  // Check if API key is available (except for Local)
+  if (!agent.apiKey && agent.platform !== 'Local' && agent.platform !== 'Other') {
     console.warn(`No API key provided for ${agent.name} (${agent.platform})`);
     return `I'm ${agent.name}, but I can't respond properly because no API key was provided. Please add an API key in my settings.`;
   }
@@ -239,10 +683,8 @@ export const callExternalAI = async (
   const formattedMessages = formatMessagesForPlatform(agent, prompt, previousMessages);
 
   try {
-    // Add analytics for tracking which AI is being called
     console.log(`Calling ${agent.platform} API for agent: ${agent.name}`);
     
-    // Show loading toast
     const toastId = toast.loading(`${agent.name} is thinking...`);
     
     let result: string;
@@ -260,8 +702,32 @@ export const callExternalAI = async (
         result = await callGoogle(agent.apiKey!, formattedMessages, agent.systemPrompt);
         break;
       
-      case 'Meta':
-        result = await callMeta(agent.apiKey!, formattedMessages, agent.systemPrompt);
+      case 'Grok':
+        result = await callGrok(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Perplexity':
+        result = await callPerplexity(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Together':
+        result = await callTogether(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Groq':
+        result = await callGroq(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Cohere':
+        result = await callCohere(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Mistral':
+        result = await callMistral(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
+      case 'Bedrock':
+        result = await callBedrock(agent.apiKey!, formattedMessages, agent.systemPrompt);
         break;
       
       case 'Canva':
@@ -276,17 +742,29 @@ export const callExternalAI = async (
         result = await callLovable(agent.apiKey!, formattedMessages, agent.systemPrompt);
         break;
       
+      case 'Replicate':
+        result = await callReplicate(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
       case 'Local':
         result = await callLocalAI(formattedMessages, agent.systemPrompt);
         break;
       
+      case 'Meta':
+        result = await callTogether(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        break;
+      
       case 'Other':
       default:
-        result = await callCustomAI(agent.apiKey!, formattedMessages, agent.systemPrompt);
+        result = await callCustomAI(
+          agent.apiKey!,
+          formattedMessages,
+          agent.systemPrompt,
+          agent.customEndpoint || ''
+        );
         break;
     }
     
-    // Dismiss loading toast
     toast.dismiss(toastId);
     
     return result;

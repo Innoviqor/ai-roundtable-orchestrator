@@ -3,11 +3,19 @@ export type AIPlatform =
   | 'OpenAI' 
   | 'Anthropic' 
   | 'Google' 
-  | 'Lovable' 
-  | 'Local' 
-  | 'Meta' 
+  | 'Meta'
+  | 'Grok'
+  | 'Perplexity'
+  | 'Together'
+  | 'Groq'
+  | 'Cohere'
+  | 'Mistral'
+  | 'Replicate'
+  | 'Bedrock'
   | 'Canva'
   | 'Suno'
+  | 'Lovable' 
+  | 'Local' 
   | 'Other';
 
 export type AgentType = 'chat' | 'task';
@@ -62,8 +70,17 @@ export const exampleAgents: AIAgent[] = [
     id: 'researcher-id',
     name: 'Researcher',
     role: 'Information Specialist',
-    systemPrompt: 'You analyze requirements and provide relevant information, options, and best practices.',
-    platform: 'Google',
+    systemPrompt: 'You analyze requirements and provide relevant information, options, and best practices. Use web search when helpful.',
+    platform: 'Perplexity',
+    type: 'chat',
+    isLeader: false
+  },
+  {
+    id: 'analyst-id',
+    name: 'Analyst',
+    role: 'Data Expert',
+    systemPrompt: 'You provide deep analysis and insights, breaking down complex topics into understandable components.',
+    platform: 'Anthropic',
     type: 'chat',
     isLeader: false
   },
@@ -81,7 +98,7 @@ export const exampleAgents: AIAgent[] = [
     name: 'Builder',
     role: 'Developer',
     systemPrompt: 'You implement the technical solutions with clean, efficient code and practical approaches.',
-    platform: 'Lovable',
+    platform: 'Together',
     type: 'chat',
     isLeader: false
   }
